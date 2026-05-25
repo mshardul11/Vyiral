@@ -6,6 +6,16 @@ import { isFirebasePublicConfigValid } from "@/lib/auth/client-config";
 
 let injectedConfig: FirebaseOptions | null = null;
 
+const NOT_CONFIGURED_MESSAGE =
+  "Firebase is not configured. Add NEXT_PUBLIC_FIREBASE_* to .env.local and restart the dev server.";
+
+export class FirebaseNotConfiguredError extends Error {
+  constructor(message = NOT_CONFIGURED_MESSAGE) {
+    super(message);
+    this.name = "FirebaseNotConfiguredError";
+  }
+}
+
 /** Called from AppProviders with config read on the server from .env */
 export function injectFirebaseConfig(config: FirebasePublicConfig): void {
   if (isFirebasePublicConfigValid(config)) {
@@ -32,37 +42,76 @@ function resolveFirebaseOptions(): FirebaseOptions {
   };
 }
 
-let app: FirebaseApp;
-let auth: Auth;
-let db: Firestore;
+/** Whether client SDK has enough config to initialize (does not throw). */
+export function hasFirebaseClientConfig(): boolean {
+  const options = resolveFirebaseOptions();
+  return Boolean(options.apiKey?.trim() && options.projectId?.trim());
+}
 
-export function getFirebaseApp(): FirebaseApp {
+let app: FirebaseApp | undefined;
+let auth: Auth | undefined;
+let db: Firestore | undefined;
+
+function ensureFirebaseApp(): FirebaseApp {
+  if (!hasFirebaseClientConfig()) {
+    throw new FirebaseNotConfiguredError();
+  }
+
   if (!getApps().length) {
-    const options = resolveFirebaseOptions();
-    if (!options.apiKey || !options.projectId) {
-      throw new Error(
-        "Firebase is not configured. Add NEXT_PUBLIC_FIREBASE_* to .env.local and restart the dev server."
-      );
-    }
-    app = initializeApp(options);
+    app = initializeApp(resolveFirebaseOptions());
   } else {
     app = getApps()[0]!;
   }
   return app;
 }
 
-export function getFirebaseAuth(): Auth {
+/** Returns null instead of throwing when Firebase is not configured. */
+export function tryGetFirebaseApp(): FirebaseApp | null {
+  if (!hasFirebaseClientConfig()) return null;
+  try {
+    return ensureFirebaseApp();
+  } catch {
+    return null;
+  }
+}
+
+export function getFirebaseApp(): FirebaseApp {
+  return ensureFirebaseApp();
+}
+
+/** Returns null instead of throwing when Firebase is not configured. */
+export function tryGetFirebaseAuth(): Auth | null {
+  const firebaseApp = tryGetFirebaseApp();
+  if (!firebaseApp) return null;
   if (!auth) {
-    auth = getAuth(getFirebaseApp());
+    auth = getAuth(firebaseApp);
   }
   return auth;
 }
 
-export function getFirebaseDb(): Firestore {
+export function getFirebaseAuth(): Auth {
+  const instance = tryGetFirebaseAuth();
+  if (!instance) {
+    throw new FirebaseNotConfiguredError();
+  }
+  return instance;
+}
+
+export function tryGetFirebaseDb(): Firestore | null {
+  const firebaseApp = tryGetFirebaseApp();
+  if (!firebaseApp) return null;
   if (!db) {
-    db = getFirestore(getFirebaseApp());
+    db = getFirestore(firebaseApp);
   }
   return db;
+}
+
+export function getFirebaseDb(): Firestore {
+  const instance = tryGetFirebaseDb();
+  if (!instance) {
+    throw new FirebaseNotConfiguredError();
+  }
+  return instance;
 }
 
 export const googleProvider = new GoogleAuthProvider();

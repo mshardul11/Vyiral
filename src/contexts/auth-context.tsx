@@ -22,7 +22,11 @@ import {
   type User,
 } from "firebase/auth";
 import { storeAuthReturnPath } from "@/lib/auth/google-auth";
-import { getFirebaseAuth, googleProvider } from "@/lib/firebase/client";
+import {
+  FirebaseNotConfiguredError,
+  googleProvider,
+  tryGetFirebaseAuth,
+} from "@/lib/firebase/client";
 import type { UserDoc } from "@/types/firestore";
 
 export type AuthErrorCode =
@@ -61,6 +65,14 @@ interface AuthContextValue {
 }
 
 const AuthContext = createContext<AuthContextValue | undefined>(undefined);
+
+function requireFirebaseAuth() {
+  const auth = tryGetFirebaseAuth();
+  if (!auth) {
+    throw new FirebaseNotConfiguredError();
+  }
+  return auth;
+}
 
 async function createSessionCookie(idToken: string): Promise<void> {
   const res = await fetch("/api/auth/session", {
@@ -158,7 +170,12 @@ export function AuthProvider({
       return;
     }
 
-    const auth = getFirebaseAuth();
+    const auth = tryGetFirebaseAuth();
+    if (!auth) {
+      setLoading(false);
+      setAuthError("firebase_not_configured");
+      return;
+    }
 
     void getRedirectResult(auth)
       .then(async (result) => {
@@ -204,7 +221,7 @@ export function AuthProvider({
           ? `${window.location.pathname}${window.location.search}`
           : "/login");
       storeAuthReturnPath(path);
-      await signInWithRedirect(getFirebaseAuth(), googleProvider);
+      await signInWithRedirect(requireFirebaseAuth(), googleProvider);
     },
     [isConfigured]
   );
@@ -216,7 +233,7 @@ export function AuthProvider({
         throw new Error("Firebase is not configured");
       }
       const result = await signInWithEmailAndPassword(
-        getFirebaseAuth(),
+        requireFirebaseAuth(),
         email,
         password
       );
@@ -232,7 +249,7 @@ export function AuthProvider({
         throw new Error("Firebase is not configured");
       }
       const result = await createUserWithEmailAndPassword(
-        getFirebaseAuth(),
+        requireFirebaseAuth(),
         email,
         password
       );
@@ -248,19 +265,22 @@ export function AuthProvider({
     if (!isConfigured) {
       throw new Error("Firebase is not configured");
     }
-    await sendPasswordResetEmail(getFirebaseAuth(), email);
+    await sendPasswordResetEmail(requireFirebaseAuth(), email);
   }, [isConfigured]);
 
   const signOut = useCallback(async () => {
     await clearSessionCookie();
-    await firebaseSignOut(getFirebaseAuth());
+    const auth = tryGetFirebaseAuth();
+    if (auth) {
+      await firebaseSignOut(auth);
+    }
     setUser(null);
     setUserDoc(null);
     setAuthError(null);
   }, []);
 
   const establishSession = useCallback(async (): Promise<EstablishSessionResult> => {
-    const firebaseUser = getFirebaseAuth().currentUser;
+    const firebaseUser = tryGetFirebaseAuth()?.currentUser ?? null;
     if (!firebaseUser) {
       return { ok: false, destination: "/login", userDoc: null };
     }

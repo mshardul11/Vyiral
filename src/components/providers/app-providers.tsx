@@ -1,7 +1,7 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState, type ReactNode } from "react";
+import { useLayoutEffect, useRef, useState, type ReactNode } from "react";
 import type { FirebasePublicConfig } from "@/lib/auth/client-config";
 import { injectFirebaseConfig } from "@/lib/firebase/client";
 import { AuthProvider } from "@/contexts/auth-context";
@@ -19,11 +19,27 @@ export function AppProviders({
   firebaseConfig: FirebasePublicConfig;
   firebaseConfigured: boolean;
 }) {
-  useState(() => {
-    if (firebaseConfigured) {
-      injectFirebaseConfig(firebaseConfig);
+  const configKey = firebaseConfigured
+    ? `${firebaseConfig.projectId}:${firebaseConfig.apiKey.slice(0, 8)}`
+    : "unconfigured";
+
+  const lastInjectedKey = useRef<string | null>(null);
+
+  // Synchronous inject on first render so AuthProvider effects see config immediately.
+  if (firebaseConfigured && lastInjectedKey.current !== configKey) {
+    injectFirebaseConfig(firebaseConfig);
+    lastInjectedKey.current = configKey;
+  }
+
+  // Re-inject if props change (e.g. HMR / env update) before children run effects.
+  useLayoutEffect(() => {
+    if (!firebaseConfigured) {
+      lastInjectedKey.current = null;
+      return;
     }
-  });
+    injectFirebaseConfig(firebaseConfig);
+    lastInjectedKey.current = configKey;
+  }, [firebaseConfigured, configKey, firebaseConfig]);
 
   const [queryClient] = useState(
     () =>
