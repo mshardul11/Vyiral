@@ -1,0 +1,50 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 222 47% 5%;
+    --foreground: 210 40% 98%;
+    --card: 222 47% 8%;
+    --card-foreground: 210 40% 98%;
+    --popover: 222 47% 8%;
+    --popover-foreground: 210 40% 98%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 217 33% 14%;
+    --secondary-foreground: 210 40% 98%;
+    --muted: 217 33% 14%;
+    --muted-foreground: 215 20% 65%;
+    --accent: 292 84% 61%;
+    --accent-foreground: 210 40% 98%;
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 210 40% 98%;
+    --border: 217 33% 18%;
+    --input: 217 33% 18%;
+    --ring: 262 83% 58%;
+    --radius: 0.75rem;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground antialiased;
+    background-image: var(--vyiral-mesh, none);
+  }
+}
+
+@layer utilities {
+  .glass-card {
+    @apply rounded-xl border border-white/10 bg-card/60 backdrop-blur-xl shadow-xl;
+  }
+  .vyiral-text-gradient {
+    @apply bg-clip-text text-transparent bg-gradient-to-r from-vyiral-violet via-vyiral-magenta to-vyiral-cyan;
+  }
+  .vyiral-glow {
+    box-shadow: 0 0 40px -10px hsl(262 83% 58% / 0.4);
+  }
+}

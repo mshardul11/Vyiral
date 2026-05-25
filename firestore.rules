@@ -1,0 +1,53 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function ownsWorkspace(workspaceId) {
+      return isSignedIn() && workspaceId == 'ws_' + request.auth.uid;
+    }
+
+    match /users/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /userProfiles/{userId} {
+      allow read, write: if isOwner(userId);
+    }
+
+    match /subscriptions/{workspaceId} {
+      allow read: if ownsWorkspace(workspaceId);
+      allow write: if false; // server-only via Admin SDK
+    }
+
+    match /projects/{projectId} {
+      allow read, write: if isSignedIn()
+        && resource.data.ownerId == request.auth.uid;
+      allow create: if isSignedIn()
+        && request.resource.data.ownerId == request.auth.uid;
+    }
+
+    match /keywords/{docId} {
+      allow read, write: if isSignedIn()
+        && ownsWorkspace(resource.data.workspaceId);
+      allow create: if isSignedIn()
+        && ownsWorkspace(request.resource.data.workspaceId);
+    }
+
+    match /{collection}/{docId} {
+      allow read, write: if isSignedIn()
+        && collection in [
+          'generatedTitles', 'generatedTags', 'generatedDescriptions',
+          'contentIdeas', 'audits', 'competitors', 'channelStatsSnapshots',
+          'savedItems', 'activityLog'
+        ]
+        && ownsWorkspace(resource.data.workspaceId);
+    }
+  }
+}
