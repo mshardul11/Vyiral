@@ -19,9 +19,11 @@ export function AppProviders({
   firebaseConfig: FirebasePublicConfig;
   firebaseConfigured: boolean;
 }) {
-  if (firebaseConfigured) {
-    injectFirebaseConfig(firebaseConfig);
-  }
+  useState(() => {
+    if (firebaseConfigured) {
+      injectFirebaseConfig(firebaseConfig);
+    }
+  });
 
   const [queryClient] = useState(
     () =>
