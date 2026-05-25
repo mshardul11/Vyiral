@@ -1,15 +1,14 @@
 import Link from "next/link";
 import { VyiralLogo } from "@/components/layout/vyiral-logo";
+import { LandingAuthActions } from "@/components/marketing/landing-auth-actions";
 
 export function LandingFooter() {
   return (
     <footer className="border-t border-border/60 px-4 py-12 lg:px-8">
-      <div className="mx-auto flex max-w-6xl flex-col gap-8 sm:flex-row sm:justify-between">
+      <div className="mx-auto flex max-w-6xl flex-col gap-8 sm:flex-row sm:items-center sm:justify-between">
         <VyiralLogo />
-        <div className="flex gap-8 text-sm text-muted-foreground">
-          <Link href="/login" className="hover:text-foreground">
-            Sign in
-          </Link>
+        <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
+          <LandingAuthActions compact />
           <Link href="#faq" className="hover:text-foreground">
             FAQ
           </Link>

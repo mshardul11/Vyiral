@@ -1,6 +1,7 @@
 import { FieldValue } from "firebase-admin/firestore";
 import { getAdminDb } from "@/lib/firebase/admin";
 import { COLLECTIONS } from "@/lib/firebase/collections";
+import { stripUndefined } from "@/lib/firebase/converters";
 import type { UserDoc, UserProfileDoc } from "@/types/firestore";
 import type { OnboardingFormValues } from "@/lib/validations/onboarding";
 
@@ -66,6 +67,14 @@ export async function getUserProfileAdmin(
   return snap.data() as UserProfileDoc;
 }
 
+function resolveWorkspaceId(uid: string, userData: Record<string, unknown> | undefined): string {
+  const fromDoc = userData?.workspaceId;
+  if (typeof fromDoc === "string" && fromDoc.trim()) {
+    return fromDoc;
+  }
+  return workspaceIdForUser(uid);
+}
+
 export async function completeOnboardingAdmin(
   uid: string,
   values: OnboardingFormValues
@@ -73,25 +82,48 @@ export async function completeOnboardingAdmin(
   const db = getAdminDb();
   const userRef = db.collection(COLLECTIONS.users).doc(uid);
   const userSnap = await userRef.get();
-  const workspaceId = userSnap.exists
-    ? (userSnap.data() as UserDoc).workspaceId
-    : workspaceIdForUser(uid);
+  const userData = userSnap.exists ? userSnap.data() : undefined;
+  const workspaceId = resolveWorkspaceId(uid, userData);
 
   const now = FieldValue.serverTimestamp();
+
+  if (!userSnap.exists) {
+    await userRef.set(
+      stripUndefined({
+        uid,
+        email: "",
+        displayName: null,
+        photoURL: null,
+        workspaceId,
+        role: "owner",
+        onboardingCompleted: false,
+        createdAt: now,
+        updatedAt: now,
+      }),
+      { merge: true }
+    );
+    await db.collection(COLLECTIONS.subscriptions).doc(workspaceId).set(
+      { workspaceId, plan: "free", status: "active" },
+      { merge: true }
+    );
+  } else if (!userData?.workspaceId) {
+    await userRef.set({ workspaceId, updatedAt: now }, { merge: true });
+  }
+
   await db.collection(COLLECTIONS.userProfiles).doc(uid).set(
-    {
+    stripUndefined({
       uid,
       workspaceId,
       niche: values.niche,
-      targetAudience: values.targetAudience,
-      goals: values.goals,
+      targetAudience: values.targetAudience ?? "YouTube viewers",
+      goals: values.goals?.length ? values.goals : ["views"],
       uploadCadence: values.uploadCadence,
       youtubeChannelId: null,
       youtubeChannelTitle: null,
       youtubeChannelThumbnail: null,
       createdAt: now,
       updatedAt: now,
-    },
+    }),
     { merge: true }
   );
 

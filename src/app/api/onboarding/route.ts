@@ -1,28 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
-import { verifySession } from "@/lib/auth/verify-session";
+import { withAuthRoute } from "@/lib/auth/api-route";
 import { completeOnboardingAdmin } from "@/lib/firebase/admin-user-service";
 import { onboardingSchema } from "@/lib/validations/onboarding";
 
-export async function POST(request: NextRequest) {
-  const decoded = await verifySession();
-  if (!decoded?.uid) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+export const POST = withAuthRoute(async (request, { session }) => {
+  const body = await request.json();
+  const parsed = onboardingSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json(
+      { error: "Validation failed", details: parsed.error.flatten() },
+      { status: 400 }
+    );
   }
 
-  try {
-    const body = await request.json();
-    const parsed = onboardingSchema.safeParse(body);
-    if (!parsed.success) {
-      return NextResponse.json(
-        { error: "Validation failed", details: parsed.error.flatten() },
-        { status: 400 }
-      );
-    }
-
-    await completeOnboardingAdmin(decoded.uid, parsed.data);
-    return NextResponse.json({ success: true });
-  } catch (error) {
-    console.error("[onboarding]", error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
-  }
-}
+  await completeOnboardingAdmin(session.uid, parsed.data);
+  return NextResponse.json({ success: true });
+});

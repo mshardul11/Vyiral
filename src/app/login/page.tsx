@@ -1,27 +1,78 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { consumeAuthReturnPath } from "@/lib/auth/google-auth";
 import Link from "next/link";
 import { VyiralLogo } from "@/components/layout/vyiral-logo";
 import { GoogleSignInButton } from "@/components/auth/google-sign-in-button";
+import { EmailAuthForm } from "@/components/auth/email-auth-form";
+import { AuthDivider } from "@/components/auth/auth-divider";
+import { AuthConfigAlert } from "@/components/auth/auth-config-alert";
 import { useAuth } from "@/contexts/auth-context";
+import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+
+function sanitizeNext(next: string): string {
+  if (next.startsWith("/") && !next.startsWith("//")) return next;
+  return "/dashboard";
+}
 
 export default function LoginPage() {
-  const { user, userDoc, loading } = useAuth();
+  const { user, userDoc, loading, signOut, establishSession, authError } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = searchParams.get("next") ?? "/dashboard";
+  const next = useMemo(() => {
+    const fromUrl = searchParams.get("next");
+    if (fromUrl) return sanitizeNext(fromUrl);
+    return sanitizeNext(consumeAuthReturnPath());
+  }, [searchParams]);
+  const [redirecting, setRedirecting] = useState(false);
+
+  const navigateAfterAuth = useCallback(async () => {
+    setRedirecting(true);
+    const result = await establishSession();
+    if (result.ok) {
+      router.replace(result.destination === "/dashboard" ? next : result.destination);
+      return;
+    }
+    setRedirecting(false);
+  }, [establishSession, router, next]);
 
   useEffect(() => {
     if (loading || !user) return;
-    if (userDoc?.onboardingCompleted) {
-      router.replace(next.startsWith("/") ? next : "/dashboard");
-    } else {
-      router.replace("/onboarding");
+    if (authError === "session_sync_failed" || authError === "profile_load_failed") {
+      return;
     }
-  }, [user, userDoc, loading, router, next]);
+
+    if (userDoc?.onboardingCompleted) {
+      setRedirecting(true);
+      router.replace(next);
+      return;
+    }
+    if (userDoc) {
+      setRedirecting(true);
+      router.replace("/onboarding");
+      return;
+    }
+
+    void navigateAfterAuth();
+  }, [
+    user,
+    userDoc,
+    loading,
+    authError,
+    router,
+    next,
+    navigateAfterAuth,
+  ]);
+
+  const showSignedInHint =
+    user &&
+    !loading &&
+    !redirecting &&
+    (authError === "session_sync_failed" || authError === "profile_load_failed" || !userDoc);
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center px-4">
@@ -36,7 +87,42 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
-          <GoogleSignInButton />
+          <AuthConfigAlert />
+          {redirecting && (
+            <div className="flex items-center justify-center gap-2 py-2 text-sm text-muted-foreground">
+              <Loader2 className="h-4 w-4 animate-spin" />
+              Taking you to your workspace…
+            </div>
+          )}
+          {showSignedInHint && (
+            <div className="rounded-lg border border-primary/30 bg-primary/10 p-3 text-center text-sm">
+              <p className="text-muted-foreground">
+                {authError
+                  ? "Sign-in needs one more step before you can enter the app."
+                  : "Finishing sign-in…"}
+              </p>
+              <div className="mt-2 flex justify-center gap-2">
+                <Button
+                  variant="secondary"
+                  size="sm"
+                  disabled={redirecting}
+                  onClick={() => navigateAfterAuth()}
+                >
+                  Go to app
+                </Button>
+                <Button variant="ghost" size="sm" onClick={() => signOut()}>
+                  Sign out
+                </Button>
+              </div>
+            </div>
+          )}
+          {!redirecting && (
+            <>
+              <EmailAuthForm />
+              <AuthDivider />
+              <GoogleSignInButton returnPath={next} />
+            </>
+          )}
           <p className="text-center text-xs text-muted-foreground">
             By continuing you agree to our terms. We only request scopes needed
             for YouTube features you enable.

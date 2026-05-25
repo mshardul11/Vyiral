@@ -1,13 +1,12 @@
-import { ModulePlaceholder } from "@/components/app/module-placeholder";
+import { TitleGeneratorClient } from "@/components/titles/title-generator-client";
 
-export const metadata = { title: "Titles" };
+export const metadata = { title: "AI Titles" };
 
-export default function TitlesPage() {
-  return (
-    <ModulePlaceholder
-      title="AI title generator"
-      description="Generate 10–30 titles with clickability scores, tone labels, and a highlighted best pick."
-      comingInPhase="Phase 4: /api/ai/title-generator"
-    />
-  );
+export default async function TitlesPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ keyword?: string }>;
+}) {
+  const { keyword } = await searchParams;
+  return <TitleGeneratorClient initialKeyword={keyword} />;
 }

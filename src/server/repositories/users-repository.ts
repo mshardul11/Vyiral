@@ -14,23 +14,44 @@ export class UsersRepository {
   }
 
   mapUser(id: string, data: DocumentData): UserDoc {
+    const workspaceId =
+      typeof data.workspaceId === "string" && data.workspaceId.trim()
+        ? data.workspaceId
+        : workspaceIdForUser(id);
+
     return {
       uid: id,
-      email: data.email as string,
-      displayName: data.displayName as string | null,
-      photoURL: data.photoURL as string | null,
-      workspaceId: data.workspaceId as string,
-      role: data.role as UserDoc["role"],
+      email: (data.email as string) ?? "",
+      displayName: (data.displayName as string | null) ?? null,
+      photoURL: (data.photoURL as string | null) ?? null,
+      workspaceId,
+      role: (data.role as UserDoc["role"]) ?? "owner",
       onboardingCompleted: Boolean(data.onboardingCompleted),
       createdAt: data.createdAt,
-      updatedAt: data.updatedAt,
+      updatedAt: data.updatedAt ?? data.createdAt,
     };
   }
 
   async getById(uid: string): Promise<UserDoc | null> {
-    const snap = await this.db.collection(COLLECTIONS.users).doc(uid).get();
+    const ref = this.db.collection(COLLECTIONS.users).doc(uid);
+    const snap = await ref.get();
     if (!snap.exists) return null;
-    return this.mapUser(snap.id, snap.data()!);
+
+    const data = snap.data()!;
+    const mapped = this.mapUser(snap.id, data);
+
+    if (!data.workspaceId && mapped.workspaceId) {
+      try {
+        await ref.update({
+          workspaceId: mapped.workspaceId,
+          updatedAt: FieldValue.serverTimestamp(),
+        });
+      } catch (e) {
+        console.warn("[users] workspaceId backfill failed", e);
+      }
+    }
+
+    return mapped;
   }
 
   async ensureUser(params: {
@@ -45,23 +66,45 @@ export class UsersRepository {
 
     const workspaceId = workspaceIdForUser(params.uid);
     const now = FieldValue.serverTimestamp();
-    const user = {
+    await ref.set(
+      {
+        uid: params.uid,
+        email: params.email,
+        displayName: params.displayName,
+        photoURL: params.photoURL,
+        workspaceId,
+        role: "owner" as const,
+        onboardingCompleted: false,
+        createdAt: now,
+        updatedAt: now,
+      },
+      { merge: true }
+    );
+
+    try {
+      await this.db.collection(COLLECTIONS.subscriptions).doc(workspaceId).set(
+        { workspaceId, plan: "free", status: "active" },
+        { merge: true }
+      );
+    } catch (e) {
+      console.warn("[users] subscription bootstrap failed (non-fatal)", e);
+    }
+
+    const fresh = await ref.get();
+    if (fresh.exists) return this.mapUser(fresh.id, fresh.data()!);
+
+    const fallbackNow = new Date().toISOString();
+    return {
       uid: params.uid,
       email: params.email,
       displayName: params.displayName,
       photoURL: params.photoURL,
       workspaceId,
-      role: "owner" as const,
+      role: "owner",
       onboardingCompleted: false,
-      createdAt: now,
-      updatedAt: now,
+      createdAt: fallbackNow,
+      updatedAt: fallbackNow,
     };
-    await ref.set(user, { merge: true });
-    await this.db.collection(COLLECTIONS.subscriptions).doc(workspaceId).set(
-      { workspaceId, plan: "free", status: "active" },
-      { merge: true }
-    );
-    return this.mapUser(params.uid, user);
   }
 
   async getProfile(uid: string): Promise<UserProfileDoc | null> {

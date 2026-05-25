@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useAuth } from "@/contexts/auth-context";
+import { getFirebaseAuthErrorMessage } from "@/lib/auth/firebase-auth-errors";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/hooks/use-toast";
 
@@ -28,20 +29,27 @@ function GoogleIcon() {
   );
 }
 
-export function GoogleSignInButton({ label = "Continue with Google" }: { label?: string }) {
-  const { signInWithGoogle } = useAuth();
+export function GoogleSignInButton({
+  label = "Continue with Google",
+  returnPath,
+}: {
+  label?: string;
+  /** Where to send the user after Google redirect (e.g. /dashboard). */
+  returnPath?: string;
+}) {
+  const { signInWithGoogle, isConfigured } = useAuth();
   const [pending, setPending] = useState(false);
   const { toast } = useToast();
 
   async function handleClick() {
     setPending(true);
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(returnPath);
     } catch (e) {
       console.error(e);
       toast({
         title: "Sign in failed",
-        description: "Check Firebase config and Google provider settings.",
+        description: getFirebaseAuthErrorMessage(e),
         variant: "destructive",
       });
     } finally {
@@ -55,10 +63,10 @@ export function GoogleSignInButton({ label = "Continue with Google" }: { label?:
       variant="outline"
       className="w-full gap-3 border-white/15 bg-white/5 hover:bg-white/10"
       onClick={handleClick}
-      disabled={pending}
+      disabled={pending || !isConfigured}
     >
       <GoogleIcon />
-      {pending ? "Signing in..." : label}
+      {pending ? "Redirecting to Google…" : label}
     </Button>
   );
 }

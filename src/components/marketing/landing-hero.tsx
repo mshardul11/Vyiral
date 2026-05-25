@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { ArrowRight, Play } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { AuthCtaLink } from "@/components/auth/auth-cta-link";
 
 export function LandingHero() {
   return (
@@ -19,9 +20,9 @@ export function LandingHero() {
         </p>
         <div className="mt-10 flex flex-col items-center justify-center gap-4 sm:flex-row">
           <Button variant="gradient" size="lg" asChild>
-            <Link href="/login">
+            <AuthCtaLink>
               Start free <ArrowRight className="h-4 w-4" />
-            </Link>
+            </AuthCtaLink>
           </Button>
           <Button variant="outline" size="lg" asChild>
             <Link href="#features">

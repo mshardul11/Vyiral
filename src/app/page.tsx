@@ -2,8 +2,8 @@ import { LandingNav } from "@/components/marketing/landing-nav";
 import { LandingHero } from "@/components/marketing/landing-hero";
 import { FeatureGrid } from "@/components/marketing/feature-grid";
 import { LandingFooter } from "@/components/marketing/landing-footer";
-import Link from "next/link";
 import { Button } from "@/components/ui/button";
+import { AuthCtaLink } from "@/components/auth/auth-cta-link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 export default function HomePage() {
@@ -37,7 +37,7 @@ export default function HomePage() {
             ))}
           </div>
           <Button className="mt-8" variant="gradient" size="lg" asChild>
-            <Link href="/login">Start free trial</Link>
+            <AuthCtaLink>Start free trial</AuthCtaLink>
           </Button>
         </div>
       </section>

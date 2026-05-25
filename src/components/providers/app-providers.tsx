@@ -2,14 +2,27 @@
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
+import type { FirebasePublicConfig } from "@/lib/auth/client-config";
+import { injectFirebaseConfig } from "@/lib/firebase/client";
 import { AuthProvider } from "@/contexts/auth-context";
 import { ThemeProvider } from "@/contexts/theme-context";
 import { WorkspaceProvider } from "@/contexts/workspace-context";
-import { CommandPaletteProvider } from "@/components/shared/command-palette";
 import { Toaster } from "@/components/ui/toaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 
-export function AppProviders({ children }: { children: ReactNode }) {
+export function AppProviders({
+  children,
+  firebaseConfig,
+  firebaseConfigured,
+}: {
+  children: ReactNode;
+  firebaseConfig: FirebasePublicConfig;
+  firebaseConfigured: boolean;
+}) {
+  if (firebaseConfigured) {
+    injectFirebaseConfig(firebaseConfig);
+  }
+
   const [queryClient] = useState(
     () =>
       new QueryClient({
@@ -23,12 +36,10 @@ export function AppProviders({ children }: { children: ReactNode }) {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
         <TooltipProvider>
-          <AuthProvider>
+          <AuthProvider firebaseConfigured={firebaseConfigured}>
             <WorkspaceProvider>
-              <CommandPaletteProvider>
-                {children}
-                <Toaster />
-              </CommandPaletteProvider>
+              {children}
+              <Toaster />
             </WorkspaceProvider>
           </AuthProvider>
         </TooltipProvider>

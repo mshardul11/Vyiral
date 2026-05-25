@@ -1,13 +1,12 @@
-import { ModulePlaceholder } from "@/components/app/module-placeholder";
+import { TagGeneratorClient } from "@/components/tags/tag-generator-client";
 
 export const metadata = { title: "Tags" };
 
-export default function TagsPage() {
-  return (
-    <ModulePlaceholder
-      title="AI tag generator"
-      description="Relevant tags with usefulness scores from topic, title, or video URL."
-      comingInPhase="Phase 4: /api/ai/tag-generator"
-    />
-  );
+export default async function TagsPage({
+  searchParams,
+}: {
+  searchParams: Promise<{ topic?: string }>;
+}) {
+  const { topic } = await searchParams;
+  return <TagGeneratorClient initialTopic={topic} />;
 }

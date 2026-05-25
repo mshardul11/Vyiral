@@ -2,6 +2,10 @@ import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
 import { AppProviders } from "@/components/providers/app-providers";
+import {
+  getFirebasePublicConfig,
+  isFirebasePublicConfigValid,
+} from "@/lib/auth/client-config";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -27,6 +31,9 @@ export default function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const firebaseConfig = getFirebasePublicConfig();
+  const firebaseConfigured = isFirebasePublicConfigValid(firebaseConfig);
+
   return (
     <html lang="en" className="dark">
       <body
@@ -36,7 +43,12 @@ export default function RootLayout({
             "radial-gradient(at 40% 20%, hsl(262 83% 58% / 0.12) 0px, transparent 50%), radial-gradient(at 80% 0%, hsl(292 84% 61% / 0.1) 0px, transparent 50%)",
         }}
       >
-        <AppProviders>{children}</AppProviders>
+        <AppProviders
+          firebaseConfig={firebaseConfig}
+          firebaseConfigured={firebaseConfigured}
+        >
+          {children}
+        </AppProviders>
       </body>
     </html>
   );

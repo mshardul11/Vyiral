@@ -1,26 +1,35 @@
-import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
+import { initializeApp, getApps, type FirebaseApp, type FirebaseOptions } from "firebase/app";
 import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
+import type { FirebasePublicConfig } from "@/lib/auth/client-config";
+import { isFirebasePublicConfigValid } from "@/lib/auth/client-config";
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-};
+let injectedConfig: FirebaseOptions | null = null;
 
-function assertFirebaseConfig() {
-  const required = [
-    "NEXT_PUBLIC_FIREBASE_API_KEY",
-    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
-    "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
-  ] as const;
-  const missing = required.filter((k) => !process.env[k]);
-  if (missing.length > 0 && process.env.NODE_ENV === "production") {
-    console.warn(`[Vyiral] Missing Firebase env: ${missing.join(", ")}`);
+/** Called from AppProviders with config read on the server from .env */
+export function injectFirebaseConfig(config: FirebasePublicConfig): void {
+  if (isFirebasePublicConfigValid(config)) {
+    injectedConfig = {
+      apiKey: config.apiKey,
+      authDomain: config.authDomain,
+      projectId: config.projectId,
+      storageBucket: config.storageBucket,
+      messagingSenderId: config.messagingSenderId,
+      appId: config.appId,
+    };
   }
+}
+
+function resolveFirebaseOptions(): FirebaseOptions {
+  if (injectedConfig) return injectedConfig;
+  return {
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  };
 }
 
 let app: FirebaseApp;
@@ -29,8 +38,13 @@ let db: Firestore;
 
 export function getFirebaseApp(): FirebaseApp {
   if (!getApps().length) {
-    assertFirebaseConfig();
-    app = initializeApp(firebaseConfig);
+    const options = resolveFirebaseOptions();
+    if (!options.apiKey || !options.projectId) {
+      throw new Error(
+        "Firebase is not configured. Add NEXT_PUBLIC_FIREBASE_* to .env.local and restart the dev server."
+      );
+    }
+    app = initializeApp(options);
   } else {
     app = getApps()[0]!;
   }

@@ -73,6 +73,11 @@ export interface KeywordDoc extends BaseEntity {
   competitionScore: number;
   opportunityScore: number;
   trendScore: number;
+  seoDifficulty?: number;
+  trendDirection?: "up" | "down" | "stable";
+  contentIntent?: string;
+  contentFormatRecommendation?: string;
+  cluster?: string;
   relatedKeywords: string[];
   questionKeywords: string[];
   saved: boolean;
@@ -114,6 +119,16 @@ export interface AuditDoc extends BaseEntity {
   categories: AuditCategoryScore[];
   recommendations: string[];
   dataQuality: DataQuality;
+  subScores?: Record<string, number>;
+  issues?: Array<{
+    category: string;
+    severity: "low" | "medium" | "high";
+    title: string;
+    description: string;
+    fix: string;
+  }>;
+  opportunities?: string[];
+  nextSteps?: string[];
 }
 
 export interface AuditCategoryScore {

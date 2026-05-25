@@ -1,45 +1,48 @@
 import { NextResponse } from "next/server";
-import { verifySession } from "@/lib/auth/verify-session";
+import { withAuthRoute } from "@/lib/auth/api-route";
+import { serializeUserDoc } from "@/lib/auth/serialize-user";
+import { userDocFromSession } from "@/lib/auth/session-user";
 import { getAdminAuth } from "@/lib/firebase/admin";
-import {
-  ensureUserDocumentAdmin,
-  getUserDocumentAdmin,
-} from "@/lib/firebase/admin-user-service";
+import { usersRepository } from "@/server/repositories/users-repository";
 
-export async function GET() {
-  const decoded = await verifySession();
-  if (!decoded?.uid) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
+export const GET = withAuthRoute(async (_request, { session }) => {
+  let user = null;
 
   try {
-    let userDoc = await getUserDocumentAdmin(decoded.uid);
+    user = await usersRepository.getById(session.uid);
+  } catch (error) {
+    console.error("[auth/me] getById failed", error);
+  }
 
-    if (!userDoc) {
-      let email = decoded.email ?? "";
-      let displayName: string | null = decoded.name ?? null;
-      let photoURL: string | null = decoded.picture ?? null;
+  if (!user) {
+    let email = session.email ?? "";
+    let displayName: string | null = session.name ?? null;
+    let photoURL: string | null = session.picture ?? null;
 
-      try {
-        const authUser = await getAdminAuth().getUser(decoded.uid);
-        email = email || authUser.email || "";
-        displayName = displayName ?? authUser.displayName ?? null;
-        photoURL = photoURL ?? authUser.photoURL ?? null;
-      } catch {
-        /* user record may not exist in admin yet */
-      }
+    try {
+      const authUser = await getAdminAuth().getUser(session.uid);
+      email = email || authUser.email || "";
+      displayName = displayName ?? authUser.displayName ?? null;
+      photoURL = photoURL ?? authUser.photoURL ?? null;
+    } catch {
+      /* optional enrichment */
+    }
 
-      userDoc = await ensureUserDocumentAdmin({
-        uid: decoded.uid,
+    try {
+      user = await usersRepository.ensureUser({
+        uid: session.uid,
         email,
         displayName,
         photoURL,
       });
+    } catch (error) {
+      console.error("[auth/me] ensureUser failed", error);
+      user = userDocFromSession(session);
+      if (email) user.email = email;
+      if (displayName) user.displayName = displayName;
+      if (photoURL) user.photoURL = photoURL;
     }
-
-    return NextResponse.json(userDoc);
-  } catch (error) {
-    console.error("[auth/me]", error);
-    return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
-}
+
+  return NextResponse.json(serializeUserDoc(user));
+});
