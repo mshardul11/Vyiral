@@ -24,7 +24,6 @@ export function DescriptionGeneratorClient({
   const [result, setResult] = useState<GeneratedDescriptionResult | null>(null);
   const [edited, setEdited] = useState("");
   const [loading, setLoading] = useState(false);
-  const [source, setSource] = useState<"ai" | "mock">("mock");
   const { toast } = useToast();
 
   async function generate() {
@@ -40,7 +39,6 @@ export function DescriptionGeneratorClient({
     if (res.success && res.data) {
       setResult(res.data.result);
       setEdited(res.data.result.description);
-      setSource(res.data.source);
     }
   }
 

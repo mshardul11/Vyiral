@@ -42,7 +42,6 @@ export function KeywordResearchClient() {
   const [results, setResults] = useState<KeywordResearchResult[]>([]);
   const [saved, setSaved] = useState<KeywordResearchResult[]>([]);
   const [loading, setLoading] = useState(false);
-  const [source, setSource] = useState<"ai" | "mock">("mock");
   const [sort, setSort] = useState<SortKey>("opportunity");
   const intentFilter = "all";
   const clusterFilter = "all";
@@ -87,7 +86,6 @@ export function KeywordResearchClient() {
     setLoading(false);
     if (res.success && res.data) {
       setResults(res.data.keywords);
-      setSource(res.data.source);
       toast({ title: "Research complete", description: res.data.summary });
     } else {
       toast({ title: "Error", description: res.error, variant: "destructive" });

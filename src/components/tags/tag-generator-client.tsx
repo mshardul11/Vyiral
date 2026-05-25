@@ -17,7 +17,6 @@ export function TagGeneratorClient({ initialTopic }: { initialTopic?: string }) 
   const sourceType = "topic" as const;
   const [tags, setTags] = useState<ScoredTag[]>([]);
   const [loading, setLoading] = useState(false);
-  const [dataSource, setDataSource] = useState<"ai" | "mock">("mock");
   const { toast } = useToast();
 
   async function generate() {
@@ -27,7 +26,6 @@ export function TagGeneratorClient({ initialTopic }: { initialTopic?: string }) 
     setLoading(false);
     if (res.success && res.data) {
       setTags(res.data.tags);
-      setDataSource(res.data.source);
     }
   }
 
