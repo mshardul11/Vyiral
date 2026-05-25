@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { consumeAuthReturnPath } from "@/lib/auth/google-auth";
 import Link from "next/link";
@@ -23,11 +23,11 @@ export default function LoginPage() {
   const { user, userDoc, loading, signOut, establishSession, authError } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const next = useMemo(() => {
-    const fromUrl = searchParams.get("next");
-    if (fromUrl) return sanitizeNext(fromUrl);
-    return sanitizeNext(consumeAuthReturnPath());
-  }, [searchParams]);
+  const [returnPathFromStorage] = useState(() =>
+    sanitizeNext(consumeAuthReturnPath())
+  );
+  const fromUrl = searchParams.get("next");
+  const next = fromUrl ? sanitizeNext(fromUrl) : returnPathFromStorage;
   const [redirecting, setRedirecting] = useState(false);
 
   const navigateAfterAuth = useCallback(async () => {
