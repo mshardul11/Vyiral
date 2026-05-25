@@ -135,7 +135,6 @@ export function AuthProvider({
         const token = await firebaseUser.getIdToken(true);
         await createSessionCookie(token);
         await refreshUserDoc();
-        setAuthError(null);
       } catch (e) {
         console.error("[Vyiral] session sync failed", e);
         setAuthError("session_sync_failed");
