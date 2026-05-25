@@ -11,10 +11,11 @@ import {
 } from "react";
 import {
   onAuthStateChanged,
+  signInWithPopup,
   signOut as firebaseSignOut,
   type User,
 } from "firebase/auth";
-import { getFirebaseAuth } from "@/lib/firebase/client";
+import { getFirebaseAuth, googleProvider } from "@/lib/firebase/client";
 import type { UserDoc } from "@/types/firestore";
 
 interface AuthContextValue {
@@ -79,8 +80,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [refreshUserDoc]);
 
   const signInWithGoogle = useCallback(async () => {
-    const { signInWithPopup } = await import("firebase/auth");
-    const { googleProvider, getFirebaseAuth } = await import("@/lib/firebase/client");
     const result = await signInWithPopup(getFirebaseAuth(), googleProvider);
     const token = await result.user.getIdToken();
     await createSessionCookie(token);
