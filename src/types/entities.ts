@@ -182,6 +182,7 @@ export interface AuditDoc extends BaseEntity {
   issues?: AuditIssueMeta[];
   opportunities?: string[];
   nextSteps?: string[];
+  recommendedUploads?: string[];
   weakPatterns?: string[];
   strongThemes?: string[];
   dataQuality: DataQuality;

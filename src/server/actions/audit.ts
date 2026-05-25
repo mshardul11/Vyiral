@@ -58,6 +58,7 @@ export async function runAudit(
       issues: result.issues,
       opportunities: result.opportunities,
       nextSteps: result.nextSteps,
+      recommendedUploads: result.recommendedUploads,
       weakPatterns: result.weakPatterns,
       strongThemes: result.strongThemes,
       dataQuality: "estimated",

@@ -21,6 +21,7 @@ export class AuditsRepository extends BaseRepository<AuditDoc> {
       issues: data.issues as AuditDoc["issues"],
       opportunities: data.opportunities as string[] | undefined,
       nextSteps: data.nextSteps as string[] | undefined,
+      recommendedUploads: data.recommendedUploads as string[] | undefined,
       weakPatterns: data.weakPatterns as string[] | undefined,
       strongThemes: data.strongThemes as string[] | undefined,
       dataQuality: (data.dataQuality as DataQuality) ?? "estimated",

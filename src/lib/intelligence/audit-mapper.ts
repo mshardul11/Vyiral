@@ -79,7 +79,7 @@ export function mapAuditDocToResult(doc: AuditDoc): ChannelAuditResult {
     issues: doc.issues ?? [],
     opportunities: doc.opportunities ?? [],
     nextSteps: doc.nextSteps?.length ? doc.nextSteps : legacyNextSteps,
-    recommendedUploads: [],
+    recommendedUploads: doc.recommendedUploads ?? [],
     weakPatterns: doc.weakPatterns ?? [],
     strongThemes: doc.strongThemes ?? [],
     radarData: doc.categories.map((c) => ({ subject: c.name, score: c.score })),
