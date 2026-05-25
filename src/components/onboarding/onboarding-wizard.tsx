@@ -7,7 +7,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import {
   onboardingSchema,
   type OnboardingFormValues,
-  creatorGoalSchema,
   uploadCadenceSchema,
 } from "@/lib/validations/onboarding";
 import { Button } from "@/components/ui/button";
@@ -20,22 +19,15 @@ import { useAuth } from "@/contexts/auth-context";
 import { cn } from "@/lib/utils";
 import type { z } from "zod";
 
-const GOAL_LABELS: Record<z.infer<typeof creatorGoalSchema>, string> = {
-  views: "More views",
-  subs: "Subscriber growth",
-  ctr: "Higher CTR",
-  watch_time: "Watch time",
-};
-
 const CADENCE_LABELS: Record<z.infer<typeof uploadCadenceSchema>, string> = {
-  daily: "Daily",
-  weekly: "Weekly",
+  daily: "Every day",
+  weekly: "Once a week",
   biweekly: "Every 2 weeks",
-  monthly: "Monthly",
-  irregular: "Irregular",
+  monthly: "Once a month",
+  irregular: "Whenever I can",
 };
 
-const STEPS = ["Niche", "Audience", "Goals", "Cadence"] as const;
+const STEPS = ["Your channel", "How often you post"] as const;
 
 export function OnboardingWizard() {
   const [step, setStep] = useState(0);
@@ -48,41 +40,31 @@ export function OnboardingWizard() {
     resolver: zodResolver(onboardingSchema),
     defaultValues: {
       niche: "",
-      targetAudience: "",
-      goals: [],
       uploadCadence: "weekly",
     },
     mode: "onChange",
   });
 
   const progress = ((step + 1) / STEPS.length) * 100;
-  const goals = form.watch("goals");
-
-  function toggleGoal(goal: z.infer<typeof creatorGoalSchema>) {
-    const current = form.getValues("goals");
-    if (current.includes(goal)) {
-      form.setValue(
-        "goals",
-        current.filter((g) => g !== goal),
-        { shouldValidate: true }
-      );
-    } else {
-      form.setValue("goals", [...current, goal], { shouldValidate: true });
-    }
-  }
 
   async function onSubmit(values: OnboardingFormValues) {
     setSubmitting(true);
     try {
+      const payload = {
+        ...values,
+        targetAudience: values.targetAudience?.trim() || "YouTube viewers",
+        goals: values.goals?.length ? values.goals : (["views"] as const),
+      };
       const res = await fetch("/api/onboarding", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(values),
+        body: JSON.stringify(payload),
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to save onboarding");
-      await refreshUserDoc();
-      toast({ title: "You're all set", description: "Welcome to Vyiral." });
-      router.push("/dashboard");
+      const doc = await refreshUserDoc();
+      toast({ title: "You're ready!", description: "Pick a tool on your home screen." });
+      router.replace(doc?.onboardingCompleted ? "/dashboard" : "/onboarding");
     } catch {
       toast({
         title: "Could not save",
@@ -95,36 +77,31 @@ export function OnboardingWizard() {
   }
 
   function nextStep() {
-    const fields: (keyof OnboardingFormValues)[][] = [
-      ["niche"],
-      ["targetAudience"],
-      ["goals"],
-      ["uploadCadence"],
-    ];
-    form.trigger(fields[step]).then((ok) => {
+    form.trigger(step === 0 ? ["niche"] : ["uploadCadence"]).then((ok) => {
       if (ok) setStep((s) => Math.min(s + 1, STEPS.length - 1));
     });
   }
 
   return (
-    <Card className="mx-auto max-w-lg border-white/10 vyiral-glow animate-fade-in">
+    <Card className="mx-auto max-w-lg border-white/10 animate-fade-in">
       <CardHeader>
-        <CardTitle className="vyiral-text-gradient text-2xl">
-          Set up your creator workspace
-        </CardTitle>
+        <CardTitle className="text-2xl">Quick setup</CardTitle>
         <CardDescription>
-          Step {step + 1} of {STEPS.length}: {STEPS[step]}
+          Two questions — then you can start using the tools.
         </CardDescription>
-        <Progress value={progress} className="mt-2" />
+        <Progress value={progress} className="mt-3" />
+        <p className="text-xs text-muted-foreground">
+          Step {step + 1} of {STEPS.length}
+        </p>
       </CardHeader>
       <CardContent>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
           {step === 0 && (
             <div className="space-y-2">
-              <Label htmlFor="niche">Channel niche</Label>
+              <Label htmlFor="niche">What is your channel about?</Label>
               <Input
                 id="niche"
-                placeholder="e.g. personal finance for millennials"
+                placeholder="e.g. cooking for busy parents"
                 {...form.register("niche")}
               />
               {form.formState.errors.niche && (
@@ -136,58 +113,14 @@ export function OnboardingWizard() {
           )}
 
           {step === 1 && (
-            <div className="space-y-2">
-              <Label htmlFor="audience">Target audience</Label>
-              <Input
-                id="audience"
-                placeholder="e.g. beginners learning investing"
-                {...form.register("targetAudience")}
-              />
-              {form.formState.errors.targetAudience && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.targetAudience.message}
-                </p>
-              )}
-            </div>
-          )}
-
-          {step === 2 && (
             <div className="space-y-3">
-              <Label>Growth goals (select all that apply)</Label>
-              <div className="grid grid-cols-2 gap-2">
-                {creatorGoalSchema.options.map((goal) => (
-                  <button
-                    key={goal}
-                    type="button"
-                    onClick={() => toggleGoal(goal)}
-                    className={cn(
-                      "rounded-lg border px-3 py-3 text-left text-sm transition-colors",
-                      goals.includes(goal)
-                        ? "border-primary bg-primary/15 text-primary"
-                        : "border-border hover:bg-white/5"
-                    )}
-                  >
-                    {GOAL_LABELS[goal]}
-                  </button>
-                ))}
-              </div>
-              {form.formState.errors.goals && (
-                <p className="text-sm text-destructive">
-                  {form.formState.errors.goals.message}
-                </p>
-              )}
-            </div>
-          )}
-
-          {step === 3 && (
-            <div className="space-y-3">
-              <Label>Upload cadence</Label>
+              <Label>How often do you upload?</Label>
               <div className="grid gap-2">
                 {uploadCadenceSchema.options.map((cadence) => (
                   <label
                     key={cadence}
                     className={cn(
-                      "flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3",
+                      "flex cursor-pointer items-center gap-3 rounded-lg border px-4 py-3 text-sm",
                       form.watch("uploadCadence") === cadence
                         ? "border-primary bg-primary/10"
                         : "border-border"
@@ -216,12 +149,12 @@ export function OnboardingWizard() {
               Back
             </Button>
             {step < STEPS.length - 1 ? (
-              <Button type="button" variant="gradient" onClick={nextStep}>
+              <Button type="button" onClick={nextStep}>
                 Continue
               </Button>
             ) : (
-              <Button type="submit" variant="gradient" disabled={submitting}>
-                {submitting ? "Saving..." : "Go to dashboard"}
+              <Button type="submit" disabled={submitting}>
+                {submitting ? "Saving…" : "Start using Vyiral"}
               </Button>
             )}
           </div>

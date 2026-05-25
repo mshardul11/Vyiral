@@ -1,12 +1,13 @@
 "use client";
 
+import type { ComponentType } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { mainNav } from "@/lib/constants/navigation";
+import { mainNav, moreNav } from "@/lib/constants/navigation";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { WorkspaceSwitcher } from "@/components/shared/workspace-switcher";
 import { VyiralLogo } from "@/components/layout/vyiral-logo";
+import { Separator } from "@/components/ui/separator";
 
 export function MobileNav({
   open,
@@ -19,36 +20,60 @@ export function MobileNav({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="left" className="w-[280px] p-0">
+      <SheetContent side="left" className="w-[260px] p-0">
         <SheetHeader className="border-b border-border/60 p-4 text-left">
-          <SheetTitle className="sr-only">Navigation</SheetTitle>
+          <SheetTitle className="sr-only">Menu</SheetTitle>
           <VyiralLogo />
         </SheetHeader>
-        <div className="p-4">
-          <WorkspaceSwitcher />
-        </div>
-        <nav className="space-y-1 px-3 pb-6">
-          {mainNav.map((item) => {
-            const Icon = item.icon;
-            const active =
-              pathname === item.href || pathname.startsWith(`${item.href}/`);
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                onClick={() => onOpenChange(false)}
-                className={cn(
-                  "flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium",
-                  active ? "bg-primary/15 text-primary" : "text-muted-foreground"
-                )}
-              >
-                <Icon className="h-4 w-4" />
-                {item.title}
-              </Link>
-            );
-          })}
+        <nav className="space-y-1 px-3 py-4">
+          {mainNav.map((item) => (
+            <MobileLink
+              key={item.href}
+              item={item}
+              pathname={pathname}
+              onClose={() => onOpenChange(false)}
+            />
+          ))}
+          <Separator className="my-3" />
+          <p className="px-3 pb-1 text-xs text-muted-foreground">More</p>
+          {moreNav.map((item) => (
+            <MobileLink
+              key={item.href}
+              item={item}
+              pathname={pathname}
+              onClose={() => onOpenChange(false)}
+            />
+          ))}
         </nav>
       </SheetContent>
     </Sheet>
+  );
+}
+
+function MobileLink({
+  item,
+  pathname,
+  onClose,
+}: {
+  item: { title: string; href: string; icon: ComponentType<{ className?: string }> };
+  pathname: string;
+  onClose: () => void;
+}) {
+  const Icon = item.icon;
+  const active =
+    pathname === item.href || pathname.startsWith(`${item.href}/`);
+
+  return (
+    <Link
+      href={item.href}
+      onClick={onClose}
+      className={cn(
+        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
+        active ? "bg-primary/15 text-primary" : "text-muted-foreground"
+      )}
+    >
+      <Icon className="h-4 w-4" />
+      {item.title}
+    </Link>
   );
 }

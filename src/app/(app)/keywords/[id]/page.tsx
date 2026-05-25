@@ -1,4 +1,7 @@
-import { ModulePlaceholder } from "@/components/app/module-placeholder";
+import Link from "next/link";
+import { getKeywordById } from "@/server/actions/keywords";
+import { KeywordDetailClient } from "@/components/keyword/keyword-detail-client";
+import { Button } from "@/components/ui/button";
 
 export default async function KeywordDetailPage({
   params,
@@ -6,11 +9,19 @@ export default async function KeywordDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return (
-    <ModulePlaceholder
-      title={`Keyword: ${id}`}
-      description="Detail view with generate titles, tags, and descriptions actions."
-      comingInPhase="Phase 4: keyword detail + AI actions"
-    />
-  );
+  const result = await getKeywordById(id);
+
+  if (!result.success || !result.data) {
+    return (
+      <div className="py-16 text-center">
+        <p className="text-muted-foreground">{result.error ?? "Keyword not found"}</p>
+        <Button className="mt-4" variant="secondary" asChild>
+          <Link href="/keywords">Back to research</Link>
+        </Button>
+      </div>
+    );
+  }
+
+  const { detail, ...keyword } = result.data;
+  return <KeywordDetailClient keyword={keyword} detail={detail} />;
 }

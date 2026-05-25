@@ -11,12 +11,9 @@ export const uploadCadenceSchema = z.enum([
 ]);
 
 export const onboardingSchema = z.object({
-  niche: z.string().min(2, "Tell us your niche").max(120),
-  targetAudience: z.string().min(2, "Describe your audience").max(200),
-  goals: z
-    .array(creatorGoalSchema)
-    .min(1, "Select at least one goal")
-    .max(4),
+  niche: z.string().min(2, "Tell us what your channel is about").max(120),
+  targetAudience: z.string().max(200).optional(),
+  goals: z.array(creatorGoalSchema).max(4).optional(),
   uploadCadence: uploadCadenceSchema,
 });
 

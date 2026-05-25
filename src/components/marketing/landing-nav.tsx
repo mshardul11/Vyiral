@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { VyiralLogo } from "@/components/layout/vyiral-logo";
-import { Button } from "@/components/ui/button";
+import { LandingAuthActions } from "@/components/marketing/landing-auth-actions";
 
 export function LandingNav() {
   return (
@@ -18,14 +18,7 @@ export function LandingNav() {
             FAQ
           </Link>
         </nav>
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" asChild>
-            <Link href="/login">Sign in</Link>
-          </Button>
-          <Button variant="gradient" asChild>
-            <Link href="/login">Get started</Link>
-          </Button>
-        </div>
+        <LandingAuthActions />
       </div>
     </header>
   );

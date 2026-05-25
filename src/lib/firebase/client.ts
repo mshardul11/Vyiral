@@ -1,54 +1,117 @@
-import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
+import { initializeApp, getApps, type FirebaseApp, type FirebaseOptions } from "firebase/app";
 import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
+import type { FirebasePublicConfig } from "@/lib/auth/client-config";
+import { isFirebasePublicConfigValid } from "@/lib/auth/client-config";
 
-const firebaseConfig = {
-  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
-  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
-  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
-  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
-  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
-};
+let injectedConfig: FirebaseOptions | null = null;
 
-function assertFirebaseConfig() {
-  const required = [
-    "NEXT_PUBLIC_FIREBASE_API_KEY",
-    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
-    "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
-  ] as const;
-  const missing = required.filter((k) => !process.env[k]);
-  if (missing.length > 0 && process.env.NODE_ENV === "production") {
-    console.warn(`[Vyiral] Missing Firebase env: ${missing.join(", ")}`);
+const NOT_CONFIGURED_MESSAGE =
+  "Firebase is not configured. Add NEXT_PUBLIC_FIREBASE_* to .env.local and restart the dev server.";
+
+export class FirebaseNotConfiguredError extends Error {
+  constructor(message = NOT_CONFIGURED_MESSAGE) {
+    super(message);
+    this.name = "FirebaseNotConfiguredError";
   }
 }
 
-let app: FirebaseApp;
-let auth: Auth;
-let db: Firestore;
+/** Called from AppProviders with config read on the server from .env */
+export function injectFirebaseConfig(config: FirebasePublicConfig): void {
+  if (isFirebasePublicConfigValid(config)) {
+    injectedConfig = {
+      apiKey: config.apiKey,
+      authDomain: config.authDomain,
+      projectId: config.projectId,
+      storageBucket: config.storageBucket,
+      messagingSenderId: config.messagingSenderId,
+      appId: config.appId,
+    };
+  }
+}
 
-export function getFirebaseApp(): FirebaseApp {
+function resolveFirebaseOptions(): FirebaseOptions {
+  if (injectedConfig) return injectedConfig;
+  return {
+    apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+    authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+    projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+    storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+    appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  };
+}
+
+/** Whether client SDK has enough config to initialize (does not throw). */
+export function hasFirebaseClientConfig(): boolean {
+  const options = resolveFirebaseOptions();
+  return Boolean(options.apiKey?.trim() && options.projectId?.trim());
+}
+
+let app: FirebaseApp | undefined;
+let auth: Auth | undefined;
+let db: Firestore | undefined;
+
+function ensureFirebaseApp(): FirebaseApp {
+  if (!hasFirebaseClientConfig()) {
+    throw new FirebaseNotConfiguredError();
+  }
+
   if (!getApps().length) {
-    assertFirebaseConfig();
-    app = initializeApp(firebaseConfig);
+    app = initializeApp(resolveFirebaseOptions());
   } else {
     app = getApps()[0]!;
   }
   return app;
 }
 
-export function getFirebaseAuth(): Auth {
+/** Returns null instead of throwing when Firebase is not configured. */
+export function tryGetFirebaseApp(): FirebaseApp | null {
+  if (!hasFirebaseClientConfig()) return null;
+  try {
+    return ensureFirebaseApp();
+  } catch {
+    return null;
+  }
+}
+
+export function getFirebaseApp(): FirebaseApp {
+  return ensureFirebaseApp();
+}
+
+/** Returns null instead of throwing when Firebase is not configured. */
+export function tryGetFirebaseAuth(): Auth | null {
+  const firebaseApp = tryGetFirebaseApp();
+  if (!firebaseApp) return null;
   if (!auth) {
-    auth = getAuth(getFirebaseApp());
+    auth = getAuth(firebaseApp);
   }
   return auth;
 }
 
-export function getFirebaseDb(): Firestore {
+export function getFirebaseAuth(): Auth {
+  const instance = tryGetFirebaseAuth();
+  if (!instance) {
+    throw new FirebaseNotConfiguredError();
+  }
+  return instance;
+}
+
+export function tryGetFirebaseDb(): Firestore | null {
+  const firebaseApp = tryGetFirebaseApp();
+  if (!firebaseApp) return null;
   if (!db) {
-    db = getFirestore(getFirebaseApp());
+    db = getFirestore(firebaseApp);
   }
   return db;
+}
+
+export function getFirebaseDb(): Firestore {
+  const instance = tryGetFirebaseDb();
+  if (!instance) {
+    throw new FirebaseNotConfiguredError();
+  }
+  return instance;
 }
 
 export const googleProvider = new GoogleAuthProvider();

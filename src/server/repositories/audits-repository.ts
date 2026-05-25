@@ -18,6 +18,10 @@ export class AuditsRepository extends BaseRepository<AuditDoc> {
       categories: (data.categories as AuditCategoryScore[]) ?? [],
       recommendations: (data.recommendations as string[]) ?? [],
       dataQuality: (data.dataQuality as DataQuality) ?? "estimated",
+      subScores: data.subScores as Record<string, number> | undefined,
+      issues: data.issues as AuditDoc["issues"],
+      opportunities: data.opportunities as string[] | undefined,
+      nextSteps: data.nextSteps as string[] | undefined,
       createdAt: data.createdAt,
       updatedAt: data.updatedAt,
     };

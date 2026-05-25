@@ -9,7 +9,14 @@ let adminDb: Firestore;
 function getPrivateKey(): string | undefined {
   const raw = process.env.FIREBASE_ADMIN_PRIVATE_KEY;
   if (!raw) return undefined;
-  return raw.replace(/\\n/g, "\n");
+  let key = raw.trim();
+  if (
+    (key.startsWith('"') && key.endsWith('"')) ||
+    (key.startsWith("'") && key.endsWith("'"))
+  ) {
+    key = key.slice(1, -1);
+  }
+  return key.replace(/\\n/g, "\n");
 }
 
 export function getAdminApp(): App {
@@ -23,9 +30,17 @@ export function getAdminApp(): App {
   const privateKey = getPrivateKey();
 
   if (projectId && clientEmail && privateKey) {
-    adminApp = initializeApp({
-      credential: cert({ projectId, clientEmail, privateKey }),
-    });
+    try {
+      adminApp = initializeApp({
+        credential: cert({ projectId, clientEmail, privateKey }),
+      });
+    } catch (error) {
+      console.error(
+        "[firebase-admin] Invalid FIREBASE_ADMIN_* credentials. Check private key formatting in .env.local (use \\n for newlines).",
+        error
+      );
+      throw error;
+    }
   } else if (
     process.env.NODE_ENV === "development" ||
     process.env.NEXT_PHASE === "phase-production-build"
@@ -47,6 +62,9 @@ export function getAdminAuth(): Auth {
 }
 
 export function getAdminDb(): Firestore {
-  if (!adminDb) adminDb = getFirestore(getAdminApp());
+  if (!adminDb) {
+    adminDb = getFirestore(getAdminApp());
+    adminDb.settings({ ignoreUndefinedProperties: true });
+  }
   return adminDb;
 }

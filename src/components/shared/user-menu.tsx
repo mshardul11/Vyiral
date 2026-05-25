@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { LogOut, Settings, User } from "lucide-react";
+import { LogOut, Settings } from "lucide-react";
 import { useAuth } from "@/contexts/auth-context";
 import {
   DropdownMenu,
@@ -15,7 +15,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 
 export function UserMenu() {
-  const { user, userDoc, signOut } = useAuth();
+  const { user, signOut } = useAuth();
 
   const initials =
     user?.displayName?.slice(0, 2).toUpperCase() ??
@@ -41,20 +41,9 @@ export function UserMenu() {
             <p className="text-xs leading-none text-muted-foreground">
               {user?.email}
             </p>
-            {userDoc && (
-              <p className="text-[10px] text-muted-foreground capitalize">
-                {userDoc.role}
-              </p>
-            )}
           </div>
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild>
-          <Link href="/settings">
-            <User className="mr-2 h-4 w-4" />
-            Profile
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuItem asChild>
           <Link href="/settings">
             <Settings className="mr-2 h-4 w-4" />
