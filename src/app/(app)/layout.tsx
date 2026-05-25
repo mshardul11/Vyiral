@@ -1,5 +1,4 @@
-import { AppSidebar } from "@/components/layout/app-sidebar";
-import { AppHeader } from "@/components/layout/app-header";
+import { AppShell } from "@/components/shared/app-shell";
 import { AuthGuard } from "@/components/auth/auth-guard";
 
 export default function AppLayout({
@@ -9,13 +8,7 @@ export default function AppLayout({
 }) {
   return (
     <AuthGuard>
-      <div className="flex min-h-screen">
-        <AppSidebar />
-        <div className="flex flex-1 flex-col">
-          <AppHeader />
-          <main className="flex-1 p-4 lg:p-8">{children}</main>
-        </div>
-      </div>
+      <AppShell>{children}</AppShell>
     </AuthGuard>
   );
 }

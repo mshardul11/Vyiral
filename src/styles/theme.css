@@ -1,0 +1,20 @@
+/**
+ * Vyiral design tokens — imported by globals.css
+ */
+:root {
+  --vyiral-spacing-xs: 0.25rem;
+  --vyiral-spacing-sm: 0.5rem;
+  --vyiral-spacing-md: 1rem;
+  --vyiral-spacing-lg: 1.5rem;
+  --vyiral-spacing-xl: 2rem;
+  --vyiral-spacing-2xl: 3rem;
+
+  --vyiral-violet: 139 92 246;
+  --vyiral-blue: 59 130 246;
+  --vyiral-magenta: 217 70 239;
+  --vyiral-cyan: 34 211 238;
+
+  --vyiral-glass-bg: hsl(222 47% 8% / 0.6);
+  --vyiral-glass-border: hsl(0 0% 100% / 0.08);
+  --vyiral-shadow-glow: 0 0 40px -10px hsl(262 83% 58% / 0.35);
+}

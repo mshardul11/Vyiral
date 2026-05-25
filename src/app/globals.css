@@ -1,3 +1,5 @@
+@import "../styles/theme.css";
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -24,6 +26,27 @@
     --input: 217 33% 18%;
     --ring: 262 83% 58%;
     --radius: 0.75rem;
+    --vyiral-shadow-glow: 0 0 40px -10px hsl(262 83% 58% / 0.35);
+  }
+
+  .light {
+    --background: 0 0% 100%;
+    --foreground: 222 47% 11%;
+    --card: 0 0% 100%;
+    --card-foreground: 222 47% 11%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 222 47% 11%;
+    --primary: 262 83% 58%;
+    --primary-foreground: 210 40% 98%;
+    --secondary: 210 40% 96%;
+    --secondary-foreground: 222 47% 11%;
+    --muted: 210 40% 96%;
+    --muted-foreground: 215 16% 47%;
+    --accent: 262 83% 58%;
+    --accent-foreground: 210 40% 98%;
+    --border: 214 32% 91%;
+    --input: 214 32% 91%;
+    --ring: 262 83% 58%;
   }
 }
 
@@ -39,12 +62,15 @@
 
 @layer utilities {
   .glass-card {
-    @apply rounded-xl border border-white/10 bg-card/60 backdrop-blur-xl shadow-xl;
+    @apply rounded-2xl border border-white/10 bg-card/60 p-6 shadow-xl backdrop-blur-xl;
   }
   .vyiral-text-gradient {
     @apply bg-clip-text text-transparent bg-gradient-to-r from-vyiral-violet via-vyiral-magenta to-vyiral-cyan;
   }
   .vyiral-glow {
-    box-shadow: 0 0 40px -10px hsl(262 83% 58% / 0.4);
+    box-shadow: var(--vyiral-shadow-glow);
+  }
+  .animate-fade-in {
+    animation: fade-in 0.4s ease-out;
   }
 }
