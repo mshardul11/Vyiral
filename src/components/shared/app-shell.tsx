@@ -27,7 +27,9 @@ export function AppShell({ children }: { children: React.ReactNode }) {
           onMenuClick={() => setMobileOpen(true)}
           onSidebarToggle={() => setSidebarCollapsed((c) => !c)}
         />
-        <main className="flex-1 p-4 lg:p-8">{children}</main>
+        <main className="flex-1 p-4 lg:p-8">
+          <div className="animate-fade-in">{children}</div>
+        </main>
       </div>
       <MobileNav open={mobileOpen} onOpenChange={setMobileOpen} />
       <CommandPalette />

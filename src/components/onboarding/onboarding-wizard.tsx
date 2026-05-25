@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -39,7 +38,6 @@ const STEPS = ["Niche", "Audience", "Goals", "Cadence"] as const;
 
 export function OnboardingWizard() {
   const [step, setStep] = useState(0);
-  const router = useRouter();
   const { toast } = useToast();
   const { refreshUserDoc } = useAuth();
   const [submitting, setSubmitting] = useState(false);
@@ -78,11 +76,12 @@ export function OnboardingWizard() {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
+        credentials: "include",
       });
       if (!res.ok) throw new Error("Failed to save onboarding");
       await refreshUserDoc();
       toast({ title: "You're all set", description: "Welcome to Vyiral." });
-      router.push("/dashboard");
+      window.location.assign("/dashboard");
     } catch {
       toast({
         title: "Could not save",

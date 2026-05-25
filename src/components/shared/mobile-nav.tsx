@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { mainNav } from "@/lib/constants/navigation";
+import { useT } from "@/contexts/locale-context";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { WorkspaceSwitcher } from "@/components/shared/workspace-switcher";
@@ -16,6 +18,7 @@ export function MobileNav({
   onOpenChange: (open: boolean) => void;
 }) {
   const pathname = usePathname();
+  const t = useT();
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -24,8 +27,9 @@ export function MobileNav({
           <SheetTitle className="sr-only">Navigation</SheetTitle>
           <VyiralLogo />
         </SheetHeader>
-        <div className="p-4">
+        <div className="space-y-3 p-4">
           <WorkspaceSwitcher />
+          <LanguageSwitcher />
         </div>
         <nav className="space-y-1 px-3 pb-6">
           {mainNav.map((item) => {
@@ -43,7 +47,7 @@ export function MobileNav({
                 )}
               >
                 <Icon className="h-4 w-4" />
-                {item.title}
+                {t(`nav.${item.key}`)}
               </Link>
             );
           })}

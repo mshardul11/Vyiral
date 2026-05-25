@@ -7,6 +7,7 @@ import { NotificationsDropdown } from "@/components/shared/notifications-dropdow
 import { UserMenu } from "@/components/shared/user-menu";
 import { useCommandPalette } from "@/components/shared/command-palette";
 import { VyiralLogo } from "@/components/layout/vyiral-logo";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
 
 export function AppHeader({
   onMenuClick,
@@ -18,7 +19,7 @@ export function AppHeader({
   const { setOpen } = useCommandPalette();
 
   return (
-    <header className="sticky top-0 z-20 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+    <header className="glass-nav sticky top-0 z-20">
       <div className="flex h-16 items-center gap-3 px-4 lg:px-6">
         <Button
           variant="ghost"
@@ -56,6 +57,7 @@ export function AppHeader({
           </kbd>
         </Button>
         <div className="ml-auto flex items-center gap-1 lg:ml-auto">
+          <LanguageSwitcher variant="compact" />
           <NotificationsDropdown />
           <UserMenu />
         </div>

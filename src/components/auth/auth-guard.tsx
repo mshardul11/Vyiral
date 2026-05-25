@@ -12,16 +12,18 @@ export function AuthGuard({
   children: ReactNode;
   requireOnboarding?: boolean;
 }) {
-  const { user, userDoc, loading } = useAuth();
+  const { user, userDoc, loading, sessionReady } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
 
   useEffect(() => {
-    if (loading) return;
+    if (loading || !sessionReady) return;
+
     if (!user) {
       router.replace(`/login?next=${encodeURIComponent(pathname)}`);
       return;
     }
+
     if (
       requireOnboarding &&
       userDoc &&
@@ -31,25 +33,21 @@ export function AuthGuard({
       router.replace("/onboarding");
       return;
     }
-    if (
-      userDoc?.onboardingCompleted &&
-      pathname === "/onboarding"
-    ) {
+
+    if (userDoc?.onboardingCompleted && pathname === "/onboarding") {
       router.replace("/dashboard");
     }
-  }, [user, userDoc, loading, router, pathname, requireOnboarding]);
+  }, [user, userDoc, loading, sessionReady, router, pathname, requireOnboarding]);
+
+  if (loading || !sessionReady || !user) {
+    return <AuthLoadingSkeleton />;
+  }
 
   const waitingForProfile =
-    !loading && !!user && userDoc === null && requireOnboarding;
+    userDoc === null && requireOnboarding && pathname !== "/onboarding";
 
-  if (loading || !user || waitingForProfile) {
-    return (
-      <div className="flex min-h-[50vh] flex-col gap-4 p-8">
-        <Skeleton className="h-8 w-48" />
-        <Skeleton className="h-32 w-full" />
-        <Skeleton className="h-32 w-full max-w-md" />
-      </div>
-    );
+  if (waitingForProfile) {
+    return <AuthLoadingSkeleton />;
   }
 
   if (
@@ -62,4 +60,14 @@ export function AuthGuard({
   }
 
   return <>{children}</>;
+}
+
+function AuthLoadingSkeleton() {
+  return (
+    <div className="flex min-h-[50vh] flex-col gap-4 p-8">
+      <Skeleton className="h-8 w-48" />
+      <Skeleton className="h-32 w-full" />
+      <Skeleton className="h-32 w-full max-w-md" />
+    </div>
+  );
 }

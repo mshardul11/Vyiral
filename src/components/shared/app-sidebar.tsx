@@ -4,13 +4,14 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { mainNav, navSections } from "@/lib/constants/navigation";
+import { useT } from "@/contexts/locale-context";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
 import { VyiralLogo } from "@/components/layout/vyiral-logo";
 import { WorkspaceSwitcher } from "@/components/shared/workspace-switcher";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { DATA_QUALITY_DISCLAIMER } from "@/lib/constants/app";
 import {
   Tooltip,
   TooltipContent,
@@ -26,12 +27,13 @@ export function AppSidebar({
   onToggle: () => void;
 }) {
   const pathname = usePathname();
+  const t = useT();
 
   return (
     <TooltipProvider delayDuration={0}>
       <aside
         className={cn(
-          "fixed inset-y-0 left-0 z-30 hidden flex-col border-r border-border/60 bg-card/40 backdrop-blur-xl transition-all duration-300 lg:flex",
+          "glass-sidebar fixed inset-y-0 left-0 z-30 hidden flex-col transition-all duration-300 lg:flex",
           collapsed ? "w-[72px]" : "w-64"
         )}
       >
@@ -59,7 +61,7 @@ export function AppSidebar({
                 <div key={section.id}>
                   {!collapsed && (
                     <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      {section.label}
+                      {t(`sections.${section.key}`)}
                     </p>
                   )}
                   <div className="space-y-0.5">
@@ -81,14 +83,14 @@ export function AppSidebar({
                           )}
                         >
                           <Icon className="h-4 w-4 shrink-0" />
-                          {!collapsed && item.title}
+                          {!collapsed && t(`nav.${item.key}`)}
                         </Link>
                       );
                       if (collapsed) {
                         return (
                           <Tooltip key={item.href}>
                             <TooltipTrigger asChild>{link}</TooltipTrigger>
-                            <TooltipContent side="right">{item.title}</TooltipContent>
+                            <TooltipContent side="right">{t(`nav.${item.key}`)}</TooltipContent>
                           </Tooltip>
                         );
                       }
@@ -102,9 +104,15 @@ export function AppSidebar({
         </ScrollArea>
 
         {!collapsed && (
-          <div className="p-4">
-            <p className="rounded-xl border border-dashed border-border/80 bg-background/40 p-3 text-[11px] leading-relaxed text-muted-foreground">
-              {DATA_QUALITY_DISCLAIMER}
+          <div className="space-y-3 p-4">
+            <div className="flex items-center justify-between gap-2">
+              <span className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground">
+                {t("common.language")}
+              </span>
+              <LanguageSwitcher variant="compact" />
+            </div>
+            <p className="glass-panel rounded-xl border-dashed p-3 text-[11px] leading-relaxed text-muted-foreground">
+              {t("disclaimer")}
             </p>
           </div>
         )}

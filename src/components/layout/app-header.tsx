@@ -8,12 +8,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { quickActions } from "@/config/navigation";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
+import { useT } from "@/contexts/locale-context";
 import { VyiralLogo } from "@/components/layout/vyiral-logo";
 import { cn } from "@/lib/utils";
 import { useState } from "react";
 import { mainNav } from "@/config/navigation";
 
 export function AppHeader() {
+  const t = useT();
   const { user, signOut } = useAuth();
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -24,7 +27,7 @@ export function AppHeader() {
     "VY";
 
   return (
-    <header className="sticky top-0 z-40 border-b border-border/60 bg-background/80 backdrop-blur-xl">
+    <header className="glass-nav sticky top-0 z-40">
       <div className="flex h-16 items-center gap-4 px-4 lg:px-6">
         <Button
           variant="ghost"
@@ -47,6 +50,7 @@ export function AppHeader() {
           />
         </div>
         <div className="ml-auto flex items-center gap-2">
+          <LanguageSwitcher variant="compact" />
           {quickActions.map((action) => (
             <Button
               key={action.href}
@@ -62,7 +66,7 @@ export function AppHeader() {
             <AvatarImage src={user?.photoURL ?? undefined} alt="" />
             <AvatarFallback>{initials}</AvatarFallback>
           </Avatar>
-          <Button variant="ghost" size="icon" onClick={() => signOut()} aria-label="Sign out">
+          <Button variant="ghost" size="icon" onClick={() => signOut()} aria-label={t("common.signOut")}>
             <LogOut className="h-4 w-4" />
           </Button>
         </div>
@@ -87,7 +91,7 @@ export function AppHeader() {
                 )}
               >
                 <Icon className="h-4 w-4" />
-                {item.title}
+                {t(`nav.${item.key}`)}
               </Link>
             );
           })}

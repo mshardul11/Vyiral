@@ -22,19 +22,20 @@ export function getAdminApp(): App {
   const clientEmail = process.env.FIREBASE_ADMIN_CLIENT_EMAIL;
   const privateKey = getPrivateKey();
 
+  const isBuildPhase = process.env.NEXT_PHASE === "phase-production-build";
+
   if (projectId && clientEmail && privateKey) {
     adminApp = initializeApp({
       credential: cert({ projectId, clientEmail, privateKey }),
     });
-  } else if (
-    process.env.NODE_ENV === "development" ||
-    process.env.NEXT_PHASE === "phase-production-build"
-  ) {
-    // Local dev / static build without service account
+  } else if (process.env.NODE_ENV === "development") {
     adminApp = initializeApp({ projectId: projectId ?? "vyiral-dev" });
+  } else if (isBuildPhase) {
+    // Allow `next build` without secrets; runtime validates via instrumentation.
+    adminApp = initializeApp({ projectId: projectId ?? "vyiral-build" });
   } else {
     throw new Error(
-      "Firebase Admin credentials missing. Set FIREBASE_ADMIN_* env vars."
+      "Firebase Admin credentials missing. Set FIREBASE_ADMIN_PROJECT_ID, FIREBASE_ADMIN_CLIENT_EMAIL, and FIREBASE_ADMIN_PRIVATE_KEY."
     );
   }
 

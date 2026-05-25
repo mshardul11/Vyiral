@@ -16,24 +16,24 @@ import {
 } from "lucide-react";
 
 export const mainNav = [
-  { title: "Dashboard", href: "/dashboard", icon: Home, section: "main" },
-  { title: "Keywords", href: "/keywords", icon: Search, section: "growth" },
-  { title: "AI Titles", href: "/titles", icon: Type, section: "growth" },
-  { title: "Tags", href: "/tags", icon: Tags, section: "growth" },
-  { title: "Descriptions", href: "/descriptions", icon: FileText, section: "growth" },
-  { title: "Content Ideas", href: "/ideas", icon: Lightbulb, section: "growth" },
-  { title: "Channel Audit", href: "/audit", icon: Shield, section: "insights" },
-  { title: "Competitors", href: "/competitors", icon: Users, section: "insights" },
-  { title: "Stats Tracker", href: "/stats", icon: LineChart, section: "insights" },
-  { title: "Projects", href: "/projects", icon: FolderKanban, section: "workspace" },
-  { title: "Settings", href: "/settings", icon: Settings, section: "workspace" },
+  { key: "dashboard", href: "/dashboard", icon: Home, section: "main" },
+  { key: "keywords", href: "/keywords", icon: Search, section: "growth" },
+  { key: "titles", href: "/titles", icon: Type, section: "growth" },
+  { key: "tags", href: "/tags", icon: Tags, section: "growth" },
+  { key: "descriptions", href: "/descriptions", icon: FileText, section: "growth" },
+  { key: "ideas", href: "/ideas", icon: Lightbulb, section: "growth" },
+  { key: "audit", href: "/audit", icon: Shield, section: "insights" },
+  { key: "competitors", href: "/competitors", icon: Users, section: "insights" },
+  { key: "stats", href: "/stats", icon: LineChart, section: "insights" },
+  { key: "projects", href: "/projects", icon: FolderKanban, section: "workspace" },
+  { key: "settings", href: "/settings", icon: Settings, section: "workspace" },
 ] as const;
 
 export const navSections = [
-  { id: "main", label: "Overview" },
-  { id: "growth", label: "Growth tools" },
-  { id: "insights", label: "Insights" },
-  { id: "workspace", label: "Workspace" },
+  { id: "main", key: "overview" },
+  { id: "growth", key: "growth" },
+  { id: "insights", key: "insights" },
+  { id: "workspace", key: "workspace" },
 ] as const;
 
 export const quickActions = [
@@ -45,7 +45,7 @@ export const quickActions = [
 export const commandPaletteItems = [
   ...mainNav.map((item) => ({
     id: item.href,
-    label: item.title,
+    labelKey: `nav.${item.key}` as const,
     href: item.href,
     group: "Navigation",
   })),

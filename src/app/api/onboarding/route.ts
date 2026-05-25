@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { verifySession } from "@/lib/auth/verify-session";
 import { completeOnboardingAdmin } from "@/lib/firebase/admin-user-service";
 import { onboardingSchema } from "@/lib/validations/onboarding";
+import { logger } from "@/lib/utils/logger";
 
 export async function POST(request: NextRequest) {
   const decoded = await verifySession();
@@ -22,7 +23,7 @@ export async function POST(request: NextRequest) {
     await completeOnboardingAdmin(decoded.uid, parsed.data);
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error("[onboarding]", error);
+    logger.error("onboarding", "POST failed", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

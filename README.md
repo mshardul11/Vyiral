@@ -4,7 +4,7 @@ Production-oriented YouTube creator growth platform — keyword research, AI met
 
 ## Stack
 
-- Next.js 15 App Router · TypeScript · Tailwind · shadcn-style UI
+- Next.js 16 App Router (Turbopack) · TypeScript · Tailwind · shadcn-style UI
 - Firebase Auth (Google) · Firestore · Admin SDK on server routes
 - OpenAI + YouTube APIs (upcoming phases)
 
@@ -14,6 +14,10 @@ Production-oriented YouTube creator growth platform — keyword research, AI met
 - Firebase client + Admin session cookies
 - Google sign-in · onboarding wizard · dashboard shell
 - Marketing landing page · Firestore rules · extension API contract stub
+
+## Requirements
+
+- **Node.js 22+** (see `.nvmrc`). With [nvm](https://github.com/nvm-sh/nvm): `nvm install` then `nvm use`.
 
 ## Quick start
 
@@ -29,6 +33,57 @@ npm run dev
 ```
 
 Open [http://localhost:3000](http://localhost:3000).
+
+## Production deployment
+
+### 1. Validate environment
+
+Set all required variables in your host (Vercel, Railway, Docker, etc.). Required for production:
+
+- `NEXT_PUBLIC_FIREBASE_*` (API key, auth domain, project ID, app URL)
+- `NEXT_PUBLIC_APP_URL` (canonical HTTPS origin, e.g. `https://app.vyiral.com`)
+- `FIREBASE_ADMIN_PROJECT_ID`, `FIREBASE_ADMIN_CLIENT_EMAIL`, `FIREBASE_ADMIN_PRIVATE_KEY`
+
+```bash
+npm run validate:env   # loads .env.local if present
+npm run predeploy      # validate + typecheck + lint + build
+```
+
+On server start, `src/instrumentation.ts` runs strict env validation when `NODE_ENV=production`.
+
+### 2. Build & run
+
+**Vercel:** connect repo, add env vars, deploy. Node 22.
+
+**Node (standalone output):**
+
+```bash
+npm run build
+npm run start:standalone
+```
+
+Set `PORT` if needed (default 3000). Static assets: copy `public` and `.next/static` into the standalone folder per [Next.js standalone docs](https://nextjs.org/docs/app/api-reference/config/next-config-js/output).
+
+**Docker:** use the included `Dockerfile` (multi-stage, port 3000).
+
+### 3. Firebase
+
+- Add your production domain under Authentication → Authorized domains.
+- Deploy rules: `firebase deploy --only firestore:rules,firestore:indexes`
+- Enable Google sign-in provider.
+
+### 4. Health check
+
+`GET /api/health` returns `{ status: "ok" }` for load balancers.
+
+### 5. Security (built-in)
+
+- HTTP-only session cookies (`secure` in production)
+- Security headers (HSTS, XFO, XCTO, Referrer-Policy)
+- Origin check on `POST /api/auth/session`
+- Protected app routes via middleware session gate
+
+Optional next steps: Sentry (`SENTRY_DSN`), rate limiting (Upstash), Firebase App Check.
 
 ### Firebase Admin private key
 

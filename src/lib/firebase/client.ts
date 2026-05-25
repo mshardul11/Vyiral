@@ -18,8 +18,12 @@ function assertFirebaseConfig() {
     "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
   ] as const;
   const missing = required.filter((k) => !process.env[k]);
-  if (missing.length > 0 && process.env.NODE_ENV === "production") {
-    console.warn(`[Vyiral] Missing Firebase env: ${missing.join(", ")}`);
+  if (missing.length > 0) {
+    const msg = `[Vyiral] Missing Firebase client env: ${missing.join(", ")}`;
+    if (process.env.NODE_ENV === "production") {
+      throw new Error(msg);
+    }
+    console.warn(msg);
   }
 }
 

@@ -11,6 +11,8 @@ import {
   CommandList,
 } from "@/components/ui/command";
 import { commandPaletteItems } from "@/lib/constants/navigation";
+import { useT } from "@/contexts/locale-context";
+import type { MessageKey } from "@/i18n/get-message";
 
 interface CommandPaletteContextValue {
   open: boolean;
@@ -57,6 +59,7 @@ export function CommandPaletteProvider({
 export function CommandPalette() {
   const router = useRouter();
   const { open, setOpen } = useCommandPalette();
+  const t = useT();
 
   const groups = commandPaletteItems.reduce(
     (acc, item) => {
@@ -82,15 +85,21 @@ export function CommandPalette() {
         <CommandEmpty>No results found.</CommandEmpty>
         {Object.entries(groups).map(([group, items]) => (
           <CommandGroup key={group} heading={group}>
-            {items.map((item) => (
-              <CommandItem
-                key={item.id}
-                value={`${item.label} ${item.href}`}
-                onSelect={() => run(item.href)}
-              >
-                {item.label}
-              </CommandItem>
-            ))}
+            {items.map((item) => {
+              const label =
+                "labelKey" in item
+                  ? t(item.labelKey as MessageKey)
+                  : item.label;
+              return (
+                <CommandItem
+                  key={item.id}
+                  value={`${label} ${item.href}`}
+                  onSelect={() => run(item.href)}
+                >
+                  {label}
+                </CommandItem>
+              );
+            })}
           </CommandGroup>
         ))}
       </CommandList>

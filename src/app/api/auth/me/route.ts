@@ -5,6 +5,7 @@ import {
   ensureUserDocumentAdmin,
   getUserDocumentAdmin,
 } from "@/lib/firebase/admin-user-service";
+import { logger } from "@/lib/utils/logger";
 
 export async function GET() {
   const decoded = await verifySession();
@@ -39,7 +40,7 @@ export async function GET() {
 
     return NextResponse.json(userDoc);
   } catch (error) {
-    console.error("[auth/me]", error);
+    logger.error("auth/me", "GET failed", error);
     return NextResponse.json({ error: "Server error" }, { status: 500 });
   }
 }

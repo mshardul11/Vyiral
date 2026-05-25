@@ -28,7 +28,13 @@ function GoogleIcon() {
   );
 }
 
-export function GoogleSignInButton({ label = "Continue with Google" }: { label?: string }) {
+export function GoogleSignInButton({
+  label = "Continue with Google",
+  returnPath,
+}: {
+  label?: string;
+  returnPath?: string;
+}) {
   const { signInWithGoogle } = useAuth();
   const [pending, setPending] = useState(false);
   const { toast } = useToast();
@@ -36,7 +42,7 @@ export function GoogleSignInButton({ label = "Continue with Google" }: { label?:
   async function handleClick() {
     setPending(true);
     try {
-      await signInWithGoogle();
+      await signInWithGoogle(returnPath);
     } catch (e) {
       console.error(e);
       toast({
@@ -58,7 +64,7 @@ export function GoogleSignInButton({ label = "Continue with Google" }: { label?:
       disabled={pending}
     >
       <GoogleIcon />
-      {pending ? "Signing in..." : label}
+      {pending ? "Redirecting to Google…" : label}
     </Button>
   );
 }
