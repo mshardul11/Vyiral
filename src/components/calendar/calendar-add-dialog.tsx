@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import type { CalItem } from "./calendar-client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,6 +35,11 @@ export function CalendarAddDialog({
   const [type, setType] = useState<CalItem["type"]>("video");
   const [status, setStatus] = useState<CalItem["status"]>("idea");
   const [date, setDate] = useState(defaultDate ?? new Date().toISOString().split("T")[0]);
+
+  useEffect(() => {
+    if (!open) return;
+    setDate(defaultDate ?? new Date().toISOString().split("T")[0]);
+  }, [defaultDate, open]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

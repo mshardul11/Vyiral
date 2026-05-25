@@ -6,7 +6,7 @@
     "clean": "node -e \"const fs=require('fs');['.next','node_modules/.cache'].forEach(p=>{try{fs.rmSync(p,{recursive:true,force:true})}catch(e){}})\"",
     "dev": "next dev",
     "dev:turbo": "next dev --turbopack",
-    "build": "NODE_ENV=production next build",
+    "build": "next build",
     "start": "next start",
     "lint": "next lint",
     "typecheck": "tsc --noEmit"

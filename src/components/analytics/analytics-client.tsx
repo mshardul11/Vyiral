@@ -45,6 +45,7 @@ export function AnalyticsClient() {
     a.href = url;
     a.download = `vyiral-analytics-${days}d.csv`;
     a.click();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
   }
 
   return (

@@ -196,7 +196,7 @@ export function AdminClient() {
           <div className="rounded-xl border border-border/60 bg-card/50 p-5">
             <h3 className="mb-3 font-semibold text-foreground">Top AI consumers</h3>
             <div className="space-y-2.5">
-              {MOCK_USERS.sort((a, b) => b.aiUsage - a.aiUsage).slice(0, 5).map((u) => (
+              {[...MOCK_USERS].sort((a, b) => b.aiUsage - a.aiUsage).slice(0, 5).map((u) => (
                 <div key={u.uid} className="flex items-center gap-3">
                   <span className="w-28 truncate text-xs text-muted-foreground">{u.displayName}</span>
                   <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-muted/40">
