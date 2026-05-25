@@ -1,6 +1,6 @@
 import type { Timestamp } from "firebase/firestore";
 
-export type UserRole = "owner" | "admin" | "member" | "viewer";
+export type UserRole = "owner" | "admin" | "editor" | "viewer";
 export type SearchIntent =
   | "informational"
   | "navigational"
@@ -13,13 +13,39 @@ export type UploadCadence =
   | "biweekly"
   | "monthly"
   | "irregular";
-export type SubscriptionPlan = "free" | "pro" | "team";
+export type SubscriptionPlan = "free" | "pro" | "business" | "agency";
 export type SubscriptionStatus =
   | "active"
   | "trialing"
   | "canceled"
   | "past_due";
 export type DataQuality = "official" | "estimated" | "unavailable";
+export type NotificationType =
+  | "audit_completed"
+  | "ai_generation_completed"
+  | "competitor_uploaded"
+  | "trending_keyword"
+  | "milestone_reached"
+  | "performance_drop"
+  | "upload_reminder"
+  | "system";
+export type CalendarItemType = "video" | "short" | "live" | "idea" | "series";
+export type CalendarItemStatus = "idea" | "draft" | "scheduled" | "published";
+export type AutomationTrigger =
+  | "keyword_scan"
+  | "competitor_monitor"
+  | "trending_detection"
+  | "weekly_audit"
+  | "performance_alert";
+export type TrendCategory =
+  | "general"
+  | "shorts"
+  | "gaming"
+  | "tech"
+  | "lifestyle"
+  | "finance"
+  | "education"
+  | "entertainment";
 
 export type FirestoreTimestamp = Timestamp | string | Date;
 
@@ -186,4 +212,129 @@ export interface SubscriptionDoc {
   stripeCustomerId?: string;
   stripeSubscriptionId?: string;
   currentPeriodEnd?: FirestoreTimestamp;
+  trialEnd?: FirestoreTimestamp;
+  aiUsageCount?: number;
+  exportCount?: number;
+  competitorTrackingCount?: number;
+}
+
+export interface WorkspaceMemberDoc {
+  id: string;
+  workspaceId: string;
+  userId: string;
+  email: string;
+  displayName: string | null;
+  photoURL: string | null;
+  role: UserRole;
+  invitedBy: string;
+  joinedAt: FirestoreTimestamp;
+  createdAt: FirestoreTimestamp;
+}
+
+export interface WorkspaceInviteDoc {
+  id: string;
+  workspaceId: string;
+  email: string;
+  role: UserRole;
+  invitedBy: string;
+  token: string;
+  expiresAt: FirestoreTimestamp;
+  acceptedAt?: FirestoreTimestamp;
+  createdAt: FirestoreTimestamp;
+}
+
+export interface NotificationDoc {
+  id: string;
+  workspaceId: string;
+  userId: string;
+  type: NotificationType;
+  title: string;
+  body: string;
+  read: boolean;
+  actionUrl?: string;
+  metadata?: Record<string, unknown>;
+  createdAt: FirestoreTimestamp;
+}
+
+export interface CalendarItemDoc extends BaseEntity {
+  title: string;
+  description?: string;
+  type: CalendarItemType;
+  status: CalendarItemStatus;
+  scheduledFor?: FirestoreTimestamp;
+  publishedAt?: FirestoreTimestamp;
+  linkedIdeaId?: string;
+  linkedKeywords?: string[];
+  thumbnailUrl?: string;
+  notes?: string;
+  seriesName?: string;
+  assignedTo?: string;
+  color?: string;
+}
+
+export interface AutomationDoc extends BaseEntity {
+  name: string;
+  trigger: AutomationTrigger;
+  enabled: boolean;
+  lastRunAt?: FirestoreTimestamp;
+  nextRunAt?: FirestoreTimestamp;
+  config: Record<string, unknown>;
+  runCount: number;
+}
+
+export interface TrendDoc {
+  id: string;
+  keyword: string;
+  category: TrendCategory;
+  region: string;
+  momentum: number;
+  weeklyGrowth: number;
+  searchVolume: number;
+  opportunityScore: number;
+  relatedKeywords: string[];
+  contentGap: boolean;
+  format: "long_form" | "short" | "live" | "any";
+  detectedAt: FirestoreTimestamp;
+}
+
+export interface VideoAnalyticsDoc extends BaseEntity {
+  videoId: string;
+  videoTitle: string;
+  thumbnailUrl?: string;
+  publishedAt: FirestoreTimestamp;
+  views: number;
+  watchTimeMinutes: number;
+  averageViewDurationSec: number;
+  averageViewPercentage: number;
+  likes: number;
+  comments: number;
+  shares: number;
+  ctr: number;
+  impressions: number;
+  subscribersGained: number;
+  retentionData: Array<{ second: number; retention: number }>;
+  trafficSources: Array<{ source: string; percentage: number }>;
+  performanceScore: number;
+  dataQuality: DataQuality;
+}
+
+export interface AiChatMessageDoc {
+  id: string;
+  workspaceId: string;
+  sessionId: string;
+  role: "user" | "assistant";
+  content: string;
+  createdAt: FirestoreTimestamp;
+}
+
+export interface AdminUserView {
+  uid: string;
+  email: string;
+  displayName: string | null;
+  plan: SubscriptionPlan;
+  status: SubscriptionStatus;
+  workspaceId: string;
+  createdAt: FirestoreTimestamp;
+  onboardingCompleted: boolean;
+  aiUsageCount: number;
 }

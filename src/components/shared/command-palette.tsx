@@ -17,23 +17,15 @@ interface CommandPaletteContextValue {
   setOpen: (open: boolean) => void;
 }
 
-const CommandPaletteContext = createContext<CommandPaletteContextValue | null>(
-  null
-);
+const CommandPaletteContext = createContext<CommandPaletteContextValue | null>(null);
 
 export function useCommandPalette() {
   const ctx = useContext(CommandPaletteContext);
-  if (!ctx) {
-    return { open: false, setOpen: () => {} };
-  }
+  if (!ctx) return { open: false, setOpen: () => {} };
   return ctx;
 }
 
-export function CommandPaletteProvider({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export function CommandPaletteProvider({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
 
   useEffect(() => {
@@ -54,9 +46,18 @@ export function CommandPaletteProvider({
   );
 }
 
-export function CommandPalette() {
+export function CommandPalette({
+  open: controlledOpen,
+  onOpenChange,
+}: {
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
+}) {
   const router = useRouter();
-  const { open, setOpen } = useCommandPalette();
+  const { open: contextOpen, setOpen: contextSetOpen } = useCommandPalette();
+
+  const isOpen = controlledOpen !== undefined ? controlledOpen : contextOpen;
+  const setIsOpen = onOpenChange ?? contextSetOpen;
 
   const groups = commandPaletteItems.reduce(
     (acc, item) => {
@@ -64,19 +65,19 @@ export function CommandPalette() {
       acc[item.group]!.push(item);
       return acc;
     },
-    {} as Record<string, typeof commandPaletteItems[number][]>
+    {} as Record<string, (typeof commandPaletteItems)[number][]>
   );
 
   const run = useCallback(
     (href: string) => {
-      setOpen(false);
+      setIsOpen(false);
       router.push(href);
     },
-    [router, setOpen]
+    [router, setIsOpen]
   );
 
   return (
-    <CommandDialog open={open} onOpenChange={setOpen}>
+    <CommandDialog open={isOpen} onOpenChange={setIsOpen}>
       <CommandInput placeholder="Search commands, pages, actions..." />
       <CommandList>
         <CommandEmpty>No results found.</CommandEmpty>

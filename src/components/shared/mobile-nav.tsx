@@ -3,11 +3,12 @@
 import type { ComponentType } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { mainNav, moreNav } from "@/lib/constants/navigation";
+import { analyticsNav, mainNav, settingsNav, workspaceNav } from "@/lib/constants/navigation";
 import { cn } from "@/lib/utils";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { VyiralLogo } from "@/components/layout/vyiral-logo";
 import { Separator } from "@/components/ui/separator";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export function MobileNav({
   open,
@@ -17,6 +18,7 @@ export function MobileNav({
   onOpenChange: (open: boolean) => void;
 }) {
   const pathname = usePathname();
+  const close = () => onOpenChange(false);
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
@@ -25,26 +27,50 @@ export function MobileNav({
           <SheetTitle className="sr-only">Menu</SheetTitle>
           <VyiralLogo />
         </SheetHeader>
-        <nav className="space-y-1 px-3 py-4">
-          {mainNav.map((item) => (
-            <MobileLink
-              key={item.href}
-              item={item}
-              pathname={pathname}
-              onClose={() => onOpenChange(false)}
-            />
-          ))}
-          <Separator className="my-3" />
-          <p className="px-3 pb-1 text-xs text-muted-foreground">More</p>
-          {moreNav.map((item) => (
-            <MobileLink
-              key={item.href}
-              item={item}
-              pathname={pathname}
-              onClose={() => onOpenChange(false)}
-            />
-          ))}
-        </nav>
+        <ScrollArea className="h-[calc(100vh-64px)]">
+          <div className="space-y-5 px-3 py-4">
+            <nav className="space-y-1" aria-label="Main tools">
+              {mainNav.map((item) => (
+                <MobileLink key={item.href} item={item} pathname={pathname} onClose={close} />
+              ))}
+            </nav>
+
+            <Separator className="opacity-30" />
+
+            <div>
+              <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">Analytics</p>
+              <nav className="space-y-1">
+                {analyticsNav.map((item) => (
+                  <MobileLink key={item.href} item={item} pathname={pathname} onClose={close} />
+                ))}
+              </nav>
+            </div>
+
+            <Separator className="opacity-30" />
+
+            <div>
+              <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">Workspace</p>
+              <nav className="space-y-1">
+                {workspaceNav.map((item) => (
+                  <MobileLink key={item.href} item={item} pathname={pathname} onClose={close} />
+                ))}
+              </nav>
+            </div>
+
+            <Separator className="opacity-30" />
+
+            <nav className="space-y-1">
+              {settingsNav.map((item) => (
+                <MobileLink key={item.href} item={item} pathname={pathname} onClose={close} />
+              ))}
+              <MobileLink
+                item={{ title: "Billing", href: "/billing", icon: () => null }}
+                pathname={pathname}
+                onClose={close}
+              />
+            </nav>
+          </div>
+        </ScrollArea>
       </SheetContent>
     </Sheet>
   );
@@ -61,7 +87,8 @@ function MobileLink({
 }) {
   const Icon = item.icon;
   const active =
-    pathname === item.href || pathname.startsWith(`${item.href}/`);
+    pathname === item.href ||
+    (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
 
   return (
     <Link
@@ -69,10 +96,10 @@ function MobileLink({
       onClick={onClose}
       className={cn(
         "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium",
-        active ? "bg-primary/15 text-primary" : "text-muted-foreground"
+        active ? "bg-primary/15 text-primary" : "text-muted-foreground hover:text-foreground"
       )}
     >
-      <Icon className="h-4 w-4" />
+      {Icon && <Icon className="h-4 w-4" />}
       {item.title}
     </Link>
   );

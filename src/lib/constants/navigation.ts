@@ -1,4 +1,6 @@
 import {
+  BarChart3,
+  Calendar,
   FileText,
   Home,
   Lightbulb,
@@ -7,11 +9,13 @@ import {
   Shield,
   Sparkles,
   Tags,
+  TrendingUp,
   Type,
   Users,
+  Zap,
 } from "lucide-react";
 
-/** Primary sidebar — everyday tools only */
+/** Primary sidebar — everyday tools */
 export const mainNav = [
   { title: "Home", href: "/dashboard", icon: Home },
   { title: "Keywords", href: "/keywords", icon: Search },
@@ -19,10 +23,28 @@ export const mainNav = [
   { title: "Tags", href: "/tags", icon: Tags },
   { title: "Descriptions", href: "/descriptions", icon: FileText },
   { title: "Video ideas", href: "/ideas", icon: Lightbulb },
+] as const;
+
+/** Analytics & growth section */
+export const analyticsNav = [
+  { title: "Analytics", href: "/stats", icon: BarChart3 },
+  { title: "Trends", href: "/trends", icon: TrendingUp },
+  { title: "Calendar", href: "/calendar", icon: Calendar },
+] as const;
+
+/** Workspace section */
+export const workspaceNav = [
+  { title: "Channel check", href: "/audit", icon: Shield },
+  { title: "Competitors", href: "/competitors", icon: Users },
+  { title: "Automations", href: "/automations", icon: Zap },
+] as const;
+
+/** Settings & account */
+export const settingsNav = [
   { title: "Settings", href: "/settings", icon: Settings },
 ] as const;
 
-/** Extra tools — linked from Home, not cluttering the sidebar */
+/** Extra tools — linked from Home */
 export const moreNav = [
   { title: "Channel check", href: "/audit", icon: Shield },
   { title: "Competitors", href: "/competitors", icon: Users },
@@ -63,6 +85,27 @@ export const homeToolCards = [
     href: "/ideas",
     icon: Lightbulb,
     color: "from-pink-600/20 to-pink-600/5",
+  },
+  {
+    title: "Analytics",
+    description: "Deep insights into your channel performance.",
+    href: "/stats",
+    icon: BarChart3,
+    color: "from-blue-600/20 to-blue-600/5",
+  },
+  {
+    title: "Trends",
+    description: "Discover what's trending in your niche right now.",
+    href: "/trends",
+    icon: TrendingUp,
+    color: "from-rose-600/20 to-rose-600/5",
+  },
+  {
+    title: "Calendar",
+    description: "Plan and schedule your content strategy.",
+    href: "/calendar",
+    icon: Calendar,
+    color: "from-indigo-600/20 to-indigo-600/5",
   },
 ] as const;
 
@@ -107,12 +150,29 @@ export const toolPageMeta: Record<
     description: "Add channels you want to keep an eye on.",
     actionLabel: "Add competitor",
   },
+  "/stats": {
+    title: "Analytics",
+    description: "Deep performance insights for your channel and videos.",
+  },
+  "/trends": {
+    title: "Trends",
+    description: "Discover what's trending in your niche.",
+  },
+  "/calendar": {
+    title: "Content Calendar",
+    description: "Plan, schedule and organize your content pipeline.",
+  },
+  "/automations": {
+    title: "Automations",
+    description: "Automate your creator workflow with AI-powered triggers.",
+  },
 };
 
 export const quickActions = [
   { label: "Keywords", href: "/keywords", icon: Search },
   { label: "Titles", href: "/titles", icon: Sparkles },
-  { label: "Tags", href: "/tags", icon: Tags },
+  { label: "Analytics", href: "/stats", icon: BarChart3 },
+  { label: "Trends", href: "/trends", icon: TrendingUp },
 ] as const;
 
 export const commandPaletteItems = [
@@ -120,12 +180,21 @@ export const commandPaletteItems = [
     id: item.href,
     label: item.title,
     href: item.href,
-    group: "Menu",
+    group: "Tools",
   })),
-  ...moreNav.map((item) => ({
+  ...analyticsNav.map((item) => ({
     id: item.href,
     label: item.title,
     href: item.href,
-    group: "More",
+    group: "Analytics",
   })),
+  ...workspaceNav.map((item) => ({
+    id: item.href,
+    label: item.title,
+    href: item.href,
+    group: "Workspace",
+  })),
+  { id: "/settings", label: "Settings", href: "/settings", group: "Account" },
+  { id: "/billing", label: "Billing", href: "/billing", group: "Account" },
+  { id: "/admin", label: "Admin Panel", href: "/admin", group: "Admin" },
 ] as const;

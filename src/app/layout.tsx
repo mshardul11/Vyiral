@@ -17,13 +17,39 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
+const BASE_URL = process.env.NEXT_PUBLIC_APP_URL ?? "https://vyiral.com";
+
 export const metadata: Metadata = {
   title: {
-    default: "Vyiral — YouTube Creator Growth",
-    template: "%s | Vyiral",
+    default: "Vyiral — YouTube Creator Operating System",
+    template: "%s — Vyiral",
   },
   description:
-    "Premium creator analytics: keyword research, AI optimization, channel audits, and competitor insights.",
+    "The enterprise creator intelligence platform. AI-powered analytics, SEO optimization, trend discovery, content calendar, and channel growth tools for serious YouTube creators.",
+  metadataBase: new URL(BASE_URL),
+  openGraph: {
+    type: "website",
+    siteName: "Vyiral",
+    title: "Vyiral — YouTube Creator Operating System",
+    description:
+      "Enterprise analytics, AI SEO tools, trend discovery, and content calendar for YouTube creators.",
+    url: BASE_URL,
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Vyiral — YouTube Creator Operating System",
+    description: "AI-powered analytics and SEO tools for YouTube creators.",
+  },
+  keywords: [
+    "youtube seo",
+    "youtube analytics",
+    "creator tools",
+    "youtube keyword research",
+    "channel growth",
+    "youtube ai tools",
+    "content calendar",
+    "youtube optimization",
+  ],
 };
 
 export default function RootLayout({

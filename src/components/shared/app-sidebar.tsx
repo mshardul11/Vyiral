@@ -3,7 +3,12 @@
 import type { ComponentType } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { mainNav, moreNav } from "@/lib/constants/navigation";
+import {
+  analyticsNav,
+  mainNav,
+  settingsNav,
+  workspaceNav,
+} from "@/lib/constants/navigation";
 import { VyiralLogo } from "@/components/layout/vyiral-logo";
 import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -18,22 +23,64 @@ export function AppSidebar() {
         <VyiralLogo />
       </div>
 
-      <ScrollArea className="flex-1 px-3 py-4">
-        <nav className="space-y-1" aria-label="Main menu">
-          {mainNav.map((item) => (
-            <NavLink key={item.href} item={item} pathname={pathname} />
-          ))}
-        </nav>
+      <ScrollArea className="flex-1 py-4">
+        <div className="space-y-5 px-3">
+          <nav className="space-y-1" aria-label="Main tools">
+            {mainNav.map((item) => (
+              <NavLink key={item.href} item={item} pathname={pathname} />
+            ))}
+          </nav>
 
-        <Separator className="my-4 opacity-40" />
+          <Separator className="opacity-30" />
 
-        <p className="mb-2 px-3 text-xs font-medium text-muted-foreground">More</p>
-        <nav className="space-y-1" aria-label="More tools">
-          {moreNav.map((item) => (
-            <NavLink key={item.href} item={item} pathname={pathname} />
-          ))}
-        </nav>
+          <div>
+            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+              Analytics
+            </p>
+            <nav className="space-y-1" aria-label="Analytics">
+              {analyticsNav.map((item) => (
+                <NavLink key={item.href} item={item} pathname={pathname} />
+              ))}
+            </nav>
+          </div>
+
+          <Separator className="opacity-30" />
+
+          <div>
+            <p className="mb-2 px-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground/60">
+              Workspace
+            </p>
+            <nav className="space-y-1" aria-label="Workspace tools">
+              {workspaceNav.map((item) => (
+                <NavLink key={item.href} item={item} pathname={pathname} />
+              ))}
+            </nav>
+          </div>
+
+          <Separator className="opacity-30" />
+
+          <nav className="space-y-1" aria-label="Account">
+            {settingsNav.map((item) => (
+              <NavLink key={item.href} item={item} pathname={pathname} />
+            ))}
+          </nav>
+        </div>
       </ScrollArea>
+
+      <div className="border-t border-border/40 p-3">
+        <div className="rounded-lg bg-gradient-to-r from-violet-600/10 to-cyan-600/10 px-3 py-2.5">
+          <p className="text-[11px] font-semibold text-foreground">Free plan</p>
+          <p className="text-[10px] text-muted-foreground">
+            Upgrade for unlimited AI
+          </p>
+          <Link
+            href="/billing"
+            className="mt-1.5 block text-[10px] font-medium text-primary hover:underline"
+          >
+            Upgrade →
+          </Link>
+        </div>
+      </div>
     </aside>
   );
 }
@@ -46,16 +93,17 @@ function NavLink({
   pathname: string;
 }) {
   const active =
-    pathname === item.href || pathname.startsWith(`${item.href}/`);
+    pathname === item.href ||
+    (item.href !== "/dashboard" && pathname.startsWith(`${item.href}/`));
   const Icon = item.icon;
 
   return (
     <Link
       href={item.href}
       className={cn(
-        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors",
+        "flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-all duration-150",
         active
-          ? "bg-primary/15 text-primary"
+          ? "bg-primary/15 text-primary shadow-sm"
           : "text-muted-foreground hover:bg-white/5 hover:text-foreground"
       )}
     >
