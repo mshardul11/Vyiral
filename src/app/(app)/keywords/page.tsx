@@ -1,13 +1,13 @@
-import { ModulePlaceholder } from "@/components/app/module-placeholder";
+import { Suspense } from "react";
+import { KeywordResearchClient } from "@/components/keyword/keyword-research-client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata = { title: "Keywords" };
 
 export default function KeywordsPage() {
   return (
-    <ModulePlaceholder
-      title="Keyword research"
-      description="Search topics to discover volume, competition, opportunity, and intent — with clear estimated labels."
-      comingInPhase="Phase 4: /api/ai/keyword-research with OpenAI + save to projects."
-    />
+    <Suspense fallback={<Skeleton className="h-96 w-full rounded-2xl" />}>
+      <KeywordResearchClient />
+    </Suspense>
   );
 }

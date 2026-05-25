@@ -1,13 +1,7 @@
-import { ModulePlaceholder } from "@/components/app/module-placeholder";
+import { ChannelAuditClient } from "@/components/audit/channel-audit-client";
 
-export const metadata = { title: "Channel Audit" };
+export const metadata = { title: "Channel audit" };
 
 export default function AuditPage() {
-  return (
-    <ModulePlaceholder
-      title="Channel audit"
-      description="Rule-based scoring plus AI summaries for titles, tags, consistency, and engagement."
-      comingInPhase="Phase 5: /api/ai/channel-audit + YouTube Data API"
-    />
-  );
+  return <ChannelAuditClient />;
 }

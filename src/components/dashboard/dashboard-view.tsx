@@ -25,6 +25,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { quickActions } from "@/lib/constants/navigation";
 import type { DashboardData } from "@/server/actions/dashboard";
+import { RecommendationsPanel } from "@/components/dashboard/recommendations-panel";
 
 export function DashboardView({ data }: { data: DashboardData }) {
   const estimated = data.metrics.dataQuality === "estimated";
@@ -132,10 +133,11 @@ export function DashboardView({ data }: { data: DashboardData }) {
         </ChartContainer>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
+      <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-4">
         <ActivityFeed items={data.recentActivity} />
         <KeywordOpportunities keywords={data.keywordOpportunities} />
         <AiSuggestions suggestions={data.aiSuggestions} />
+        <RecommendationsPanel />
       </div>
 
       <div className="grid gap-6 lg:grid-cols-2">

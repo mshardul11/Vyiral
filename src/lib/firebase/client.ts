@@ -2,22 +2,34 @@ import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
 import { getAuth, GoogleAuthProvider, type Auth } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 
-const firebaseConfig = {
+/**
+ * Static process.env access is required — Next.js only inlines NEXT_PUBLIC_*
+ * when referenced by name, not via process.env[variable].
+ */
+const firebaseEnv = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
   projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
   storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
   messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+} as const;
+
+const firebaseConfig = {
+  apiKey: firebaseEnv.apiKey,
+  authDomain: firebaseEnv.authDomain,
+  projectId: firebaseEnv.projectId,
+  storageBucket: firebaseEnv.storageBucket,
+  messagingSenderId: firebaseEnv.messagingSenderId,
+  appId: firebaseEnv.appId,
 };
 
 function assertFirebaseConfig() {
-  const required = [
-    "NEXT_PUBLIC_FIREBASE_API_KEY",
-    "NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN",
-    "NEXT_PUBLIC_FIREBASE_PROJECT_ID",
-  ] as const;
-  const missing = required.filter((k) => !process.env[k]);
+  const missing: string[] = [];
+  if (!firebaseEnv.apiKey) missing.push("NEXT_PUBLIC_FIREBASE_API_KEY");
+  if (!firebaseEnv.authDomain) missing.push("NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN");
+  if (!firebaseEnv.projectId) missing.push("NEXT_PUBLIC_FIREBASE_PROJECT_ID");
+
   if (missing.length > 0) {
     const msg = `[Vyiral] Missing Firebase client env: ${missing.join(", ")}`;
     if (process.env.NODE_ENV === "production") {

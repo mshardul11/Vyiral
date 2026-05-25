@@ -1,13 +1,13 @@
-import { ModulePlaceholder } from "@/components/app/module-placeholder";
+import { Suspense } from "react";
+import { DescriptionGeneratorClient } from "@/components/descriptions/description-generator-client";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const metadata = { title: "Descriptions" };
 
 export default function DescriptionsPage() {
   return (
-    <ModulePlaceholder
-      title="AI description generator"
-      description="SEO descriptions with hook, summary, keyword block, and chapters/CTA."
-      comingInPhase="Phase 4: /api/ai/description-generator"
-    />
+    <Suspense fallback={<Skeleton className="h-96 w-full rounded-2xl" />}>
+      <DescriptionGeneratorClient />
+    </Suspense>
   );
 }

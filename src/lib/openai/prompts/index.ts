@@ -34,8 +34,13 @@ export function auditPrompt(channelSummary: string) {
   return `Audit this YouTube channel based on public signals:
 ${channelSummary}
 Return JSON: {
-  "overallScore": number,
-  "categories": Array<{ "name": string, "score": number, "summary": string }>,
-  "recommendations": string[]
+  "overallScore": number (0-100),
+  "categories": Array<{ "name": string, "score": number, "summary": string }> (titles, thumbnails, descriptions, cadence, branding, engagement, topic focus),
+  "issues": Array<{ "title": string, "severity": "low"|"medium"|"high", "category": string, "description": string, "fix": string }> (2-5 actionable issues),
+  "opportunities": string[] (2-4 growth opportunities),
+  "nextSteps": string[] (3-5 prioritized actions),
+  "recommendedUploads": string[] (2-3 video ideas),
+  "weakPatterns": string[] (1-3 patterns hurting performance),
+  "strongThemes": string[] (1-3 themes that work well)
 }`;
 }

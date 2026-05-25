@@ -52,6 +52,15 @@ export const contentIdeasResponseSchema = z.object({
   ),
 });
 
+export const auditIssueSchema = z.object({
+  id: z.string().optional(),
+  title: z.string(),
+  severity: z.enum(["low", "medium", "high"]),
+  category: z.string(),
+  description: z.string(),
+  fix: z.string(),
+});
+
 export const auditResponseSchema = z.object({
   overallScore: z.number().min(0).max(100),
   categories: z.array(
@@ -61,5 +70,12 @@ export const auditResponseSchema = z.object({
       summary: z.string(),
     })
   ),
-  recommendations: z.array(z.string()),
+  /** @deprecated Prefer nextSteps; kept for older model outputs */
+  recommendations: z.array(z.string()).optional(),
+  issues: z.array(auditIssueSchema).optional(),
+  opportunities: z.array(z.string()).optional(),
+  nextSteps: z.array(z.string()).optional(),
+  recommendedUploads: z.array(z.string()).optional(),
+  weakPatterns: z.array(z.string()).optional(),
+  strongThemes: z.array(z.string()).optional(),
 });

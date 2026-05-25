@@ -1,4 +1,6 @@
-import { ModulePlaceholder } from "@/components/app/module-placeholder";
+import { KeywordDetailClient } from "@/components/keyword/keyword-detail-client";
+
+export const metadata = { title: "Keyword detail" };
 
 export default async function KeywordDetailPage({
   params,
@@ -6,11 +8,5 @@ export default async function KeywordDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  return (
-    <ModulePlaceholder
-      title={`Keyword: ${id}`}
-      description="Detail view with generate titles, tags, and descriptions actions."
-      comingInPhase="Phase 4: keyword detail + AI actions"
-    />
-  );
+  return <KeywordDetailClient id={id} />;
 }
